@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+#include "CardDeck.h"
 using namespace std;
 
 class Hands{
@@ -7,10 +8,9 @@ public:
     int m, s, p, f, j, z;
     int pairs[6], triples[6], flushes[6]; //
 
-    static const int HU_VALUE = 65535.0;
+    CardDeck *deck;
 
-    double getBlockValue(int typeCode, int r){
-    }
+    static const int HU_VALUE = 65535.0;
 
     Hands(char *str){
         memset(tiles, 0, sizeof(tiles));
@@ -41,6 +41,10 @@ public:
         }
     }
 
+    void setDeck(CardDeck &newDeck){
+        deck = &newDeck;
+    }
+
     void output(){
         for(int i = 0; i < 34; ++i){
             if(i == 8 || i == 17 || i == 26 || i == 33)printf("%d\n", tiles[i]);
@@ -64,17 +68,27 @@ public:
         for(int i = 31; i < 34; ++i) j += tiles[i];*/
     }
 
+    double evaluateAnyPairs(){
+    }
+
+    double evaluateAnyChow(){
+    }
+
+    double evaluateAnyPung(){
+    }
+
+    double evaluatePairs(int cid){
+
+    }
+
     double evaluateWuMenQi(){
 
         int round = 1000;
         const int maxRound = 21;
 
-
-        int counts[]
-
         while(round--){
             CardDeck deck;
-            deck.addTile(*this);
+
 
             while(!deck.isEmpty()){
                 int cid = deck.drawCard();
@@ -162,59 +176,7 @@ public:
     }
 };
 
-class CardDeck{
-public:
 
-    static const int MAX_CARD = 136;
-
-    bool vis[MAX_CARD];
-    int deck[MAX_CARD], p;
-
-    CardDeck(){
-        p = 0;
-        srand(time(NULL));
-        for(int i = 0; i < MAX_CARD; ++i){
-            vis[i] = false;
-            deck[i] = i;
-        }
-    }
-
-    bool isEmpty(){
-        return p >= MAX_CARD;
-    }
-
-    void addTile(const Hands &hand){
-        for(int i = 0; i < 34; ++i){
-            for(int j = 0; j < hand.tiles[i]; ++j){
-                mark(i);
-            }
-        }
-    }
-
-    void randomShuffle(){
-        random_shuffle(deck, deck + MAX_CARD);
-        for(int i = 0; i < MAX_CARD; ++i){
-            printf("%d ", deck[i]);
-        }
-        printf("\n");
-    }
-
-    void mark(int tid){
-        int base = tid * 4;
-        for(int offset = 0; offset < 4; ++offset){
-            if(!vis[base + offset]){
-                vis[base + offset] = true;
-                break;
-            }
-        }
-    }
-
-    int drawCard(){
-        while(p < MAX_CARD && vis[p])++p;
-        if(p < MAX_CARD)return p;
-        return -1;
-    }
-};
 
 int main()
 {
@@ -224,8 +186,10 @@ int main()
     Hands myHand(s);
     CardDeck myDeck;
 
+    myHand.setDeck(myDeck);
+
     myDeck.randomShuffle();
-    myDeck.addTile(myHand);
+    myDeck.addTile(myHand.tiles);
 
    // myHand.
 

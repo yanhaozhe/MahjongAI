@@ -13,6 +13,7 @@ class CardDeck
 
         bool isEmpty();
         int drawCard();
+        void reset(int type);
         void addTile(int *tiles);
         void mark(int tid);
         void randomShuffle();

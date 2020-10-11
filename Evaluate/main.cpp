@@ -5,8 +5,8 @@ using namespace std;
 class Hands{
 public:
     int tiles[34], remains[34];
-    int m, s, p, f, j, z;
-    int pairs[6], triples[6], flushes[6]; //
+    int shown[34], hidden[34];
+    vector<pair<int, int> > showCards; // 0: Chow 1: Pung 2: Kung 3: AnKung
 
     CardDeck *deck;
 
@@ -15,8 +15,13 @@ public:
     Hands(char *str){
         memset(tiles, 0, sizeof(tiles));
 
+        deck = NULL;
+
         int n = strlen(str);
         int i = 0, j, offset;
+
+        showCards.clear();
+
         while(i < n){
             int j = i;
             while(j < n && isdigit(str[j]))++j;
@@ -38,6 +43,8 @@ public:
 
         for(int i = 0; i < 34; ++i){
             remains[i] = 4 - tiles[i];
+            shown[i] = 0;
+            hidden[i] =
         }
     }
 
@@ -68,7 +75,10 @@ public:
         for(int i = 31; i < 34; ++i) j += tiles[i];*/
     }
 
-    double evaluateAnyPairs(){
+    double evaluateAnyPairs(bool *limitaions){
+        for(int i = 0; i < 34; ++i){
+            if(limitaions[i] == true;)
+        }
     }
 
     double evaluateAnyChow(){
@@ -78,6 +88,23 @@ public:
     }
 
     double evaluatePairs(int cid){
+
+    }
+
+    double evaluateChow(int cid){
+
+    }
+
+    bool hasChow(int cid){
+        for(auto i = showCards.begin(); i != showCards.end(); ++i){
+            int type
+        }
+    }
+
+    bool hasPung(int cid){
+    }
+
+    bool hasPair(int cid){
 
     }
 
@@ -95,8 +122,6 @@ public:
 
             }
         }
-
-
     }
 
     double wuMenQi(){

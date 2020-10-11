@@ -16,6 +16,12 @@ bool CardDeck::isEmpty(){
     return p > MAX_CARD;
 }
 
+void CardDeck::reset(int type){
+    p = 0;
+    if(type == 1)randomShuffle();
+}
+
+
 void CardDeck::mark(int tid){
     int base = tid * 4;
     for(int offset = 0; offset < 4; ++offset){

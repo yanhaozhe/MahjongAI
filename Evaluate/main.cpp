@@ -6,8 +6,7 @@ class Hands{
 public:
     int tiles[34], remains[34];
     int shown[34], hidden[34];
-    vector<pair<int, int> > showCards; // 0: Chow 1: Pung 2: Kung 3: AnKung
-
+    vector<pair<int, int> > showCards; // 0: Chow 1: Pung 2: Kung
     CardDeck *deck;
 
     static const int HU_VALUE = 65535.0;
@@ -44,7 +43,7 @@ public:
         for(int i = 0; i < 34; ++i){
             remains[i] = 4 - tiles[i];
             shown[i] = 0;
-            hidden[i] =
+            hidden[i] = tiles[i];
         }
     }
 
@@ -76,9 +75,6 @@ public:
     }
 
     double evaluateAnyPairs(bool *limitaions){
-        for(int i = 0; i < 34; ++i){
-            if(limitaions[i] == true;)
-        }
     }
 
     double evaluateAnyChow(){
@@ -95,16 +91,44 @@ public:
 
     }
 
-    bool hasChow(int cid){
-        for(auto i = showCards.begin(); i != showCards.end(); ++i){
-            int type
+    bool hasSingleChow(int cid){ // This function is used to check if a flush cid, cid + 1 and cid + 2 exists.
+
+        if(cid >= 0 && cid < 27 && cid % 9 < 6){
+
+            for(auto i = showCards.begin(); i != showCards.end(); ++i){
+                if(i -> first == 0 && i -> second == cid)return true;
+            }
+
+            return hidden[cid] && hidden[cid + 1] && hidden[cid + 2];
+        }
+
+        return false;
+    }
+
+    bool hasSinglePung(int cid){
+        if(cid >= 0 && cid < 34){
+            for(auto i = showCards.begin(); i != showCards.end(); ++i){
+                if((i -> first == 1 || i -> second == 2)&& i -> second == cid)return true;
+            }
+
+            return hidden[cid] >= 3;
         }
     }
 
-    bool hasPung(int cid){
+    bool hasSinglePair(int cid){
+        return cid >= 0 && cid < 34 && hidden[cid] >= 2;
     }
 
-    bool hasPair(int cid){
+    double evaluateSpecial(){
+        evaluateQuanBuKao();
+    }
+
+    double evaluateQuanBuKao(){
+
+    }
+
+    int getQuanBuKaoTiles(){
+        //147m258s369p
 
     }
 
@@ -115,7 +139,6 @@ public:
 
         while(round--){
             CardDeck deck;
-
 
             while(!deck.isEmpty()){
                 int cid = deck.drawCard();

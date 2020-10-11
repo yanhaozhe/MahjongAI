@@ -5,7 +5,7 @@
 class CardDeck
 {
     public:
-        static const int MAX_CARD = 136;
+        static const int MAX_CARD = 136, MAX_TYPE = 34;
         bool vis[MAX_CARD];
         int deck[MAX_CARD], p;
 

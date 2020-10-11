@@ -2,6 +2,8 @@
 #include "CardDeck.h"
 using namespace std;
 
+int tilesRange[5][34];
+
 class Hands{
 public:
     int tiles[34], remains[34];
@@ -91,9 +93,35 @@ public:
 
     }
 
+    bool hasAnyPair(int *limit){
+        for(int i = 0; i < 34; ++i){
+            if(limit[i] && hasSinglePair(i))return true;
+        }
+    }
+
+    bool hasAnySuit(int *limit){
+        return hasAnyChow(limit) || hasAnyPung(limit);
+    }
+
+    bool hasAnyChow(int *limit){
+        for(int i = 0; i < 27; ++i){
+            if(limit[i] && i % 9 < 7 && hasSingleChow(i))return true;
+        }
+
+        return false;
+    }
+
+    bool hasAnyPung(int *limit){
+        for(int i = 0; i < 34; ++i){
+            if(limit[i] && hasSinglePung(i))return true;
+        }
+
+        return false;
+    }
+
     bool hasSingleChow(int cid){ // This function is used to check if a flush cid, cid + 1 and cid + 2 exists.
 
-        if(cid >= 0 && cid < 27 && cid % 9 < 6){
+        if(cid >= 0 && cid < 27 && cid % 9 < 7){
 
             for(auto i = showCards.begin(); i != showCards.end(); ++i){
                 if(i -> first == 0 && i -> second == cid)return true;
@@ -129,21 +157,59 @@ public:
 
     int getQuanBuKaoTiles(){
         //147m258s369p
+        return 14;
+    }
 
+    int evaluateWuMenQiSuits(){
+        int best = 0;
+        for(int i = 0; i < 5; ++i){
+            int cur = 0;
+            for(int j = 0; j < 5; ++j){
+                if(i == j)
+                    cur += hasAnyPair(tilesRange[i]);
+                else
+                    cur += hasAnySuit(tilesRange[i]);
+            }
+
+            if(cur > best)best = cur;
+            if(cur == 5)break;
+        }
+
+        return best;
     }
 
     double evaluateWuMenQi(){
 
+
         int round = 1000;
         const int maxRound = 21;
 
+        int cntsWin[maxRound];
+        int tmp[34];
+
+        memcpy(tmp, hidden, sizeof(hidden));
+        memset(cntsWin, 0, sizeof(cntsWin));
+
         while(round--){
-            CardDeck deck;
+            int curRound = 0;
 
-            while(!deck.isEmpty()){
-                int cid = deck.drawCard();
+            while(!(deck -> isEmpty()) && curRound < maxRound){
+                curRound++;
+                int cid = deck -> drawCard();
+                hidden[cid]++;
 
+                int curSuits = evaluateWuMenQiSuits();
+
+                if(curSuits == 5){
+                    cntsWin[curRound]++;
+                    break;
+                }
             }
+            memcpy(hidden, tmp, sizeof(tmp));
+        }
+
+        for(int i = 0; i < maxRound; ++i){
+            printf("Round: %d Counts: %d Ratio: .%03d \n", i, cntsWin[i], cntsWin[i] * 1000 / round);
         }
     }
 
@@ -224,12 +290,22 @@ public:
     }
 };
 
+void init(){
+    memset(tilesRange, 0, sizeof(tilesRange));
+    for(int i = 0; i < 9; ++i)tilesRange[0][i] = true;
+    for(int i = 9; i < 18; ++i)tilesRange[1][i] = true;
+    for(int i = 18; i < 27; ++i)tilesRange[2][i] = true;
+    for(int i = 27; i < 31; ++i)tilesRange[3][i] = true;
+    for(int i = 31; i < 34; ++i)tilesRange[4][i] = true;
+}
 
 
 int main()
 {
     char s[32];
     scanf("%s", s);
+
+    init();
 
     Hands myHand(s);
     CardDeck myDeck;
@@ -238,6 +314,17 @@ int main()
 
     myDeck.randomShuffle();
     myDeck.addTile(myHand.tiles);
+
+    time_t st, ed;
+
+    st = clock();
+
+    myHand.evaluateWuMenQi();
+
+
+    ed = clock();
+
+    printf("Time cost: %d ms. \n", (ed - st) * 1000 / CLOCKS_PER_SEC);
 
    // myHand.
 

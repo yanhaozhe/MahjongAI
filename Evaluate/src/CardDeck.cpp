@@ -4,11 +4,11 @@ using namespace std;
 
 CardDeck::CardDeck()
 {
+    deck.clear();
     p = 0;
     srand(time(0));
     for(int i = 0; i < MAX_CARD; ++i){
         vis[i] = false;
-        deck[i] = i;
     }
 }
 
@@ -32,26 +32,23 @@ void CardDeck::mark(int tid){
     }
 }
 
-void CardDeck::addTile(int *tiles){
+void CardDeck::setTiles(int *remainTiles){
     for(int i = 0; i < 34; ++i){
-        for(int j = 0; j < tiles[i]; ++j){
-            mark(i);
+        for(int j = 0; j < remainTiles[i]; ++j){
+            deck.push_back(i * 4 + j);
         }
     }
 }
 
 int CardDeck::drawCard(){
-    while(p < MAX_CARD && vis[p])++p;
-    if(p < MAX_CARD)return p;
+    int n = deck.size();
+    while(p < n && vis[deck[p]])++p;
+    if(p < n){++p; return deck[p] / 4;}
     return -1;
 }
 
 void CardDeck::randomShuffle(){
-    random_shuffle(deck, deck + MAX_CARD);
-    for(int i = 0; i < MAX_CARD; ++i){
-        printf("%d ", deck[i]);
-    }
-    printf("\n");
+    random_shuffle(deck.begin(), deck.end());
 }
 
 CardDeck::~CardDeck()

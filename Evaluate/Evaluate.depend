@@ -20,3 +20,13 @@
 	"CardDeck.h"
 	<bits/stdc++.h>
 
+1602554281 source:d:\chinesemahjongai\evaluate\main.cpp
+	<bits/stdc++.h>
+
+1602488491 d:\chinesemahjongai\evaluate\include\carddeck.h
+	<vector>
+
+1602488566 source:d:\chinesemahjongai\evaluate\src\carddeck.cpp
+	"CardDeck.h"
+	<bits/stdc++.h>
+

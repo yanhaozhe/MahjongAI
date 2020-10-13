@@ -1,11 +1,78 @@
 #include<bits/stdc++.h>
-#include "CardDeck.h"
 using namespace std;
 
 int tilesRange[5][34];
-
+const double baseValueQiDuiZi[8] = {0.01,0.02,0.04,0.2,1.25,25,500,10000.0};
 //0.75 0.2 0.04 0.01
 
+const int tileType[34] = {0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,4,4,4};
+const int tileOrd[34] =  {0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,0,1,2};
+
+
+char tileNameTenhou[34][3];
+
+class CardDeck{
+public:
+
+    static const int MAX_CARD = 136, MAX_TYPE = 34;
+    bool vis[MAX_CARD];
+    int p;
+    std::vector<int> deck;
+
+    CardDeck()
+    {
+        deck.clear();
+        p = 0;
+        srand(time(0));
+        for(int i = 0; i < MAX_CARD; ++i){
+            vis[i] = false;
+        }
+    }
+
+    bool isEmpty(){
+        return p > MAX_CARD;
+    }
+
+    void reset(int type){
+        p = 0;
+        if(type == 1)randomShuffle();
+    }
+
+
+    void mark(int tid){
+        int base = tid * 4;
+        for(int offset = 0; offset < 4; ++offset){
+            if(!vis[base + offset]){
+                vis[base + offset] = true;
+                break;
+            }
+        }
+    }
+
+    void setTiles(int *remainTiles){
+        for(int i = 0; i < 34; ++i){
+            for(int j = 0; j < remainTiles[i]; ++j){
+                deck.push_back(i * 4 + j);
+            }
+        }
+    }
+
+    int drawCard(){
+        int n = deck.size();
+        while(p < n && vis[deck[p]])++p;
+        if(p < n){++p; return deck[p] / 4;}
+        return -1;
+    }
+
+    void randomShuffle(){
+        random_shuffle(deck.begin(), deck.end());
+    }
+
+    ~CardDeck()
+    {
+        //dtor
+    }
+};
 
 struct HandElements{
     int pairs[34], triples[34];
@@ -16,7 +83,7 @@ class Hands{
 public:
     int tiles[34], remains[34];
     int shown[34], hidden[34];
-    static const int MAX_ROUND = 8192;
+    static const int MAX_ROUND = 1024;
 
     HandElements he;
 
@@ -25,8 +92,6 @@ public:
     int remainTiles;
     vector<pair<int, int> > showCards; // 0: Chow 1: Pung 2: Kung
     CardDeck *myDeck;
-
-    static const int HU_VALUE = 65535.0;
 
     Hands(char *str){
         memset(tiles, 0, sizeof(tiles));
@@ -96,8 +161,41 @@ public:
         }
     }
 
+    void addToHE(int cid){
+        if(hidden[cid] % 2 == 1)he.pairs[cid]++;
+        else if(hidden[cid] == 2)he.triples[cid]++;
+        else{
+            int type = cid / 9, ord = cid % 9;
+            if(type < 3){
+                int &i = cid;
+                if(ord - 2 >= 0 && !he.flushes[i - 2] && hidden[i - 2] && hidden[i - 1])he.flushes[type][ord - 2] = 1;
+                if(ord - 1 >= 0 && ord + 1 < 9 && !he.flushes[i - 1] && hidden[i - 1] && hidden[i + 1])he.flushes[type][ord - 1] = 1;
+                if(ord + 2 < 0 && !he.flushes[i] && hidden[i + 1] && hidden[i + 2])he.flushes[type][ord] = 1;
+
+            }
+        }
+    }
+
     void setDeck(CardDeck &newDeck){
         myDeck = &newDeck;
+    }
+
+    void addRemain(int cid){
+        remains[cid]++;
+    }
+
+    void removeRemain(int cid){
+        remains[cid]--;
+    }
+
+    void addTile(int cid){
+        hidden[cid]++;
+        removeRemain(cid);
+    }
+
+    void removeTile(int cid){
+        hidden[cid]--;
+        addRemain(cid);
     }
 
     void output(){
@@ -164,7 +262,8 @@ public:
     }
 
     bool hasHiddenChow(int cid){
-        return hidden[cid] && hidden[cid + 1] && hidden[cid + 2];
+        int type = tileType[cid], ord = tileOrd[cid];
+        return type < 3 && ord < 7 && hidden[cid] && hidden[cid + 1] && hidden[cid + 2];
     }
 
     bool hasHiddenPung(int cid){
@@ -181,29 +280,18 @@ public:
         int acc = 0;
         double accScore = 0.0;
 
+        double ra = 1.0, decayRate = 0.55, accRate = 0.0;
+
         for(int i = 0; i < maxRound; ++i){
             acc += cntsWin[i];
-            double ra = acc * 1.0 / MAX_ROUND;
+            accScore += acc * 1.0 / MAX_ROUND * ra;
 
-            if(i == 2)accScore += ra / 2.0;
-            if(i == 5)accScore += ra / 4.0;
-            if(i == 8)accScore += ra / 8.0;
-            if(i == 11)accScore += ra / 16.0;
-            if(i == 14)accScore += ra / 32.0;
-            if(i == 17)accScore += ra / 64.0;
-            if(i == 20)accScore += ra / 64.0;
+            accRate += ra;
+            ra = ra * decayRate;
            // printf("Round: %d Counts: %d Acc: %d Ratio: .%03d \n", i, cntsWin[i], acc, acc * 1000 / MAX_ROUND);
         }
 
-        if(maxRound < 2)return acc * 1.0 / MAX_ROUND;
-        if(maxRound < 5)return accScore * 2.0 / 1.0;
-        if(maxRound < 8)return accScore * 4.0 / 3.0;
-        if(maxRound < 11)return accScore * 8.0 / 7.0;
-        if(maxRound < 14)return accScore * 16.0 / 15.0;
-        if(maxRound < 17)return accScore * 32.0 / 31.0;
-        if(maxRound < 20)return accScore * 65.0 / 64.0;
-
-        return accScore * 100;
+        return accScore / accRate * 10000.0;
     }
 
     double evaluateQuanBuKao(){
@@ -249,8 +337,8 @@ public:
         return calcValue(cntsWin, maxRound);
     }
 
-    double evaluateSanSeSanTongShun(){
-        int round = MAX_ROUND;
+    double evaluateWeightValue(){
+         int round = MAX_ROUND;
 
         myDeck -> reset(1);
 
@@ -261,6 +349,8 @@ public:
 
         memcpy(tmp, hidden, sizeof(hidden));
         memset(cntsWin, 0, sizeof(cntsWin));
+
+        updateHE();
 
         while(round--){
             int curRound = 0;
@@ -274,6 +364,52 @@ public:
 
                 hidden[cid]++;
 
+                //addToHE(cid);
+                updateHE();
+
+                if(winSanSeSanTongShun()){
+                    cntsWin[curRound]++;
+                    break;
+                }
+
+            }
+
+            myDeck -> reset(1);
+
+            memcpy(hidden, tmp, sizeof(tmp));
+        }
+
+        return calcValue(cntsWin, maxRound);
+    }
+
+    double evaluateSanSeSanTongShun(){
+        int round = MAX_ROUND;
+
+        myDeck -> reset(1);
+
+        const int maxRound = min(21, remainTiles);
+
+        int cntsWin[maxRound];
+        int tmp[34];
+
+        memcpy(tmp, hidden, sizeof(hidden));
+        memset(cntsWin, 0, sizeof(cntsWin));
+
+        updateHE();
+
+        while(round--){
+            int curRound = 0;
+
+            while(!(myDeck -> isEmpty()) && curRound < maxRound){
+
+                curRound++;
+                int cid = myDeck -> drawCard();
+
+                if(cid == -1) break;
+
+                hidden[cid]++;
+
+                //addToHE(cid);
                 updateHE();
 
                 if(winSanSeSanTongShun()){
@@ -331,7 +467,8 @@ public:
                 hidden[i] -= 2;
                 if(extraShowSuits > 0){ok = true; break;}
                 for(int j = 0; j < 34; ++j){
-                    if(hasHiddenChow(j) || hasHiddenPung(j)){ok = true; break;}
+
+                    if((hasHiddenChow(j) || hasHiddenPung(j))){ok = true; break;}
                 }
                 hidden[i] += 2;
             }
@@ -378,32 +515,36 @@ public:
 
 
 
-    int evaluateWuMenQiSuits(bool *hasPair, bool *hasSuit){
+    int evaluateWuMenQiSuits(bool *hasPair, bool *hasSuit, int cid){
         int best = 0;
-        for(int i = 0; i < 5; ++i){
-            int cur = 0;
-            for(int j = 0; j < 5; ++j){
-                if(i == j)
-                    if(hasPair[j])cur++;
-                    else{
-                        hasPair[j] = hasAnyPair(tilesRange[j]);
-                        cur += hasPair[j];
-                    }
 
-                else{
-                    if(hasSuit[j])cur++;
-                    else{
-                        hasSuit[j] = hasAnySuit(tilesRange[j]);
-                        cur += hasSuit[j];
-                    }
-                }
+        int type = tileType[cid], ord = tileOrd[cid];
+
+        if(hidden[cid] >= 2)hasPair[type] = true;
+
+        else if(hidden[cid] >= 3)hasSuit[type] = true;
+
+        else if(hidden[cid] == 1 && type < 3){
+            if(ord >= 2 && hasHiddenChow(cid - 2))hasSuit[type] = true;
+            if(ord >= 1 && ord < 8 && hasHiddenChow(cid - 1))hasSuit[type] = true;
+            if(ord < 7 && hasHiddenChow(cid))hasSuit[type] = true;
+        }
+
+        int cur;
+        for(int i = 0; i < 5; ++i){
+            cur = 0;
+            for(int j = 0; j < 5; ++j){
+                if(i == j)cur += hasPair[j];
+                else cur += hasSuit[j];
             }
 
             if(cur > best)best = cur;
-            if(cur == 5)break;
         }
-
         return best;
+    }
+
+    double evaluatePengPengHu(){
+
     }
 
     double evaluateWuMenQi(){
@@ -435,7 +576,7 @@ public:
 
                 hidden[cid]++;
 
-                int curSuits = evaluateWuMenQiSuits(hasPair, hasSuit);
+                int curSuits = evaluateWuMenQiSuits(hasPair, hasSuit, cid);
 
                 if(curSuits == 5){
                     cntsWin[curRound]++;
@@ -452,7 +593,7 @@ public:
     }
 
     double evaluateQiDuiZi(){
-        int round = MAX_ROUND;
+        /*int round = MAX_ROUND;
 
         myDeck -> reset(1);
 
@@ -502,7 +643,26 @@ public:
             memcpy(hidden, tmp, sizeof(tmp));
         }
 
-        return calcValue(cntsWin, maxRound);
+        return calcValue(cntsWin, maxRound);*/
+
+        updateHE();
+
+        int pairs = 0;
+        for(int i = 0; i < 34; ++i)
+            pairs += hidden[i] / 2;
+
+        if(pairs <= 2)return baseValueQiDuiZi[pairs];
+
+        double base = baseValueQiDuiZi[pairs], adjust = 1.0;
+
+        for(int i = 0; i < 34; ++i){
+            if(hidden[i] % 2 == 1)adjust *= (remains[i] + 1) / 4.0;
+        }
+
+        adjust = pow(adjust, 1.0 / (8 - pairs));
+
+        return base * adjust;
+
     }
 
     void testEvaluateFunction(const char* funcName, evaluateFunction func){
@@ -519,15 +679,71 @@ public:
 
         printf("Time cost: %d ms. \n", (ed - st) * 1000 / CLOCKS_PER_SEC);
     }
+
+    double getWeightValue(){
+        vector<double> values;
+        values.clear();
+
+        values.push_back(evaluateQiDuiZi());
+
+        values.push_back(evaluateQuanBuKao());
+        values.push_back(evaluateWuMenQi());
+        values.push_back(evaluateSanSeSanTongShun());
+
+        sort(values.begin(), values.end());
+
+        int n = values.size();
+        double curWeight = 1.4, decayRate = 0.88, acc = 0.0;
+        double value = 0.0;
+        for(int i = n - 1; i >= 0; --i){
+            value += curWeight * values[i];
+            acc += curWeight;
+            curWeight *= decayRate;
+        }
+
+        return value / acc;
+    }
+
+    int playTile(){
+        double bestValue = 0.0, bestChoice = -1;
+        for(int i = 0; i < 34; ++i){
+            if(hidden[i] > 0){
+                hidden[i]--;
+
+                double curValue = getWeightValue();
+
+                hidden[i]++;
+
+                printf("Play: %s Value: %.4lf\n", tileNameTenhou[i], curValue);
+
+                if(curValue > bestValue){
+                    bestChoice = i;
+                    bestValue = curValue;
+                }
+            }
+        }
+
+        return bestChoice;
+    }
 };
 
 void init(){
     memset(tilesRange, 0, sizeof(tilesRange));
+    memset(tileNameTenhou, 0, sizeof(tileNameTenhou));
     for(int i = 0; i < 9; ++i)tilesRange[0][i] = true;
     for(int i = 9; i < 18; ++i)tilesRange[1][i] = true;
     for(int i = 18; i < 27; ++i)tilesRange[2][i] = true;
     for(int i = 27; i < 31; ++i)tilesRange[3][i] = true;
     for(int i = 31; i < 34; ++i)tilesRange[4][i] = true;
+
+    for(int i = 0; i < 34; ++i){
+        int type = i / 9, ord = i % 9;
+        tileNameTenhou[i][0] = ord + '1';
+        if(type == 0)tileNameTenhou[i][1] = 'm';
+        if(type == 1)tileNameTenhou[i][1] = 's';
+        if(type == 2)tileNameTenhou[i][1] = 'p';
+        if(type == 3)tileNameTenhou[i][1] = 'z';
+    }
 }
 
 
@@ -548,17 +764,7 @@ int main()
     myDeck.randomShuffle();
     myDeck.setTiles(myHand.remains);
 
-
-    myHand.testEvaluateFunction("WuMenQi", &Hands::evaluateWuMenQi);
-
-    myHand.testEvaluateFunction("QuanBuKao", &Hands::evaluateQuanBuKao);
-
-    myHand.testEvaluateFunction("QiDuiZi", &Hands::evaluateQiDuiZi);
-
-    myHand.testEvaluateFunction("SanSeSanTongShun", &Hands::evaluateSanSeSanTongShun);
-
-
-   // myHand.
+    myHand.playTile();
 
 
     return 0;

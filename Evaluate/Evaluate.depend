@@ -1,7 +1,6 @@
 # depslib dependency file v1.0
-1602508649 source:d:\ssd\chinesemahjongai\evaluate\main.cpp
+1602571358 source:d:\ssd\chinesemahjongai\evaluate\main.cpp
 	<bits/stdc++.h>
-	"CardDeck.h"
 
 1602488491 d:\ssd\chinesemahjongai\evaluate\include\carddeck.h
 	<vector>

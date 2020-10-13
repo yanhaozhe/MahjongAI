@@ -16,6 +16,9 @@ public:
 
     static const int MAX_CARD = 136, MAX_TYPE = 34;
     bool vis[MAX_CARD];
+
+    int tmp[34];
+
     int p;
     std::vector<int> deck;
 
@@ -83,6 +86,9 @@ class Hands{
 public:
     int tiles[34], remains[34];
     int shown[34], hidden[34];
+
+    int tmp[34];
+
     static const int MAX_ROUND = 1024;
 
     HandElements he;
@@ -207,7 +213,7 @@ public:
 
     bool hasAnyPair(int *limit){
         for(int i = 0; i < 34; ++i){
-            if(limit[i] && hasSinglePair(i))return true;
+            if(limit[i] && hasHiddenPair(i))return true;
         }
         return false;
     }
@@ -257,7 +263,7 @@ public:
         return false;
     }
 
-    bool hasSinglePair(int cid){
+    bool hasHiddenPair(int cid){
         return cid >= 0 && cid < 34 && hidden[cid] >= 2;
     }
 
@@ -268,11 +274,6 @@ public:
 
     bool hasHiddenPung(int cid){
         return hidden[cid] >= 3;
-    }
-
-    double evaluateSpecial(){
-        evaluateQuanBuKao();
-        evaluateQiDuiZi();
     }
 
     double calcValue(int *cntsWin, int maxRound){
@@ -302,7 +303,6 @@ public:
         const int maxRound = min(21, remainTiles);
 
         int cntsWin[maxRound];
-        int tmp[34];
 
         memcpy(tmp, hidden, sizeof(hidden));
         memset(cntsWin, 0, sizeof(cntsWin));
@@ -337,14 +337,64 @@ public:
         return calcValue(cntsWin, maxRound);
     }
 
+    void excludeSingleFlush(int cid){
+        hidden[cid]--;
+        hidden[cid + 1]--;
+        hidden[cid + 2]--;
+    }
+
+    int checkAndExcludeThreeFlushes(int cid1, int cid2, int cid3){
+        if(cid1 > cid2)swap(cid1, cid2);
+        if(cid1 > cid3)swap(cid1, cid3);
+        if(cid2 > cid3)swap(cid2, cid3);
+
+        memcpy(tmp, hidden, sizeof(tmp));
+
+        bool ok1, ok2, ok3;
+        ok1 = ok2 = ok3 = false;
+
+        int res = 0;
+        for(auto it = showCards.begin(); it != showCards.end(); ++it){
+            //if()
+            if(it -> first == 0){
+                if(!ok1 && it -> second == cid1){ok1 = true; res++;}
+                if(!ok2 && it -> second == cid2){ok2 = true; res++;}
+                if(!ok3 && it -> second == cid3){ok3 = true; res++;}
+            }
+        }
+
+        if(!ok1){
+            if(hasHiddenChow(cid1)){
+                ok1 = true; excludeSingleFlush(cid1);
+            }
+        }
+
+         if(!ok2){
+            if(hasHiddenChow(cid2)){
+                ok2 = true;  excludeSingleFlush(cid2);
+            }
+        }
+
+         if(!ok3){
+            if(hasHiddenChow(cid3)){
+                ok3 = true;  excludeSingleFlush(cid3);
+            }
+        }
+
+        if(ok1 && ok2 && ok3)
+            return res;
+        memcpy(hidden, tmp, sizeof(tmp));
+        return -1;
+    }
+
     double evaluateWeightValue(){
-         int round = MAX_ROUND;
+        int round = MAX_ROUND;
 
         myDeck -> reset(1);
 
         const int maxRound = min(21, remainTiles);
 
-        int cntsWin[maxRound];
+        int cntsWin[81][maxRound];
         int tmp[34];
 
         memcpy(tmp, hidden, sizeof(hidden));
@@ -368,7 +418,7 @@ public:
                 updateHE();
 
                 if(winSanSeSanTongShun()){
-                    cntsWin[curRound]++;
+                    //cntsWin[curRound]++;
                     break;
                 }
 
@@ -379,7 +429,8 @@ public:
             memcpy(hidden, tmp, sizeof(tmp));
         }
 
-        return calcValue(cntsWin, maxRound);
+//        return calcValue(cntsWin, maxRound);
+        return 0.0;
     }
 
     double evaluateSanSeSanTongShun(){
@@ -424,7 +475,11 @@ public:
             memcpy(hidden, tmp, sizeof(tmp));
         }
 
-        return calcValue(cntsWin, maxRound);
+        double valueSanSeSanTongShun = calcValue(cntsWin, maxRound);
+
+        printf("SanSeSanTongShun: %.4lf\n", valueSanSeSanTongShun);
+
+        return valueSanSeSanTongShun;
     }
 
     int hasSanSeSanTongShun(){
@@ -439,11 +494,35 @@ public:
     }
 
     bool winSanSeSanTongShun(){
-        int checkVal = hasSanSeSanTongShun();
-        if(checkVal == -1)return false;
+        memcpy(tmp, hidden, sizeof(tmp));
+
+        for(int i = 0; i < 7; ++i){
+            memcpy(hidden, tmp, sizeof(tmp));
+            int val = checkAndExcludeThreeFlushes(i, i + 9, i + 18);
+            if(val != -1){
+                int extraSuit = showCards.size() - val;
+
+                for(int j = 0; j < 34; ++j){
+                    if(hidden[j] >= 2){
+                        hidden[j] -= 2;
+
+                        if(extraSuit)return true;
+
+                        for(int k = 0; k < 34; ++k){
+                            if(hasHiddenChow(k) || hasHiddenPung(k))
+                                return true;
+                        }
+
+                        hidden[j] += 2;
+                    }
+                }
+            }
+        }
+
+        return false;
 
 
-        int startId = checkVal / 1000, mv = checkVal / 100 % 10, sv = checkVal / 10 % 10, pv = checkVal % 10;
+/*        int startId = checkVal / 1000, mv = checkVal / 100 % 10, sv = checkVal / 10 % 10, pv = checkVal % 10;
 
         int tmp[34];
         memcpy(tmp, hidden, sizeof(tmp));
@@ -478,7 +557,7 @@ public:
 
         memcpy(hidden, tmp, sizeof(tmp));
 
-        return ok;
+        return ok;*/
     }
 
     int countQuanBuKaoTiles(){
@@ -522,7 +601,7 @@ public:
 
         if(hidden[cid] >= 2)hasPair[type] = true;
 
-        else if(hidden[cid] >= 3)hasSuit[type] = true;
+        if(hidden[cid] >= 3)hasSuit[type] = true;
 
         else if(hidden[cid] == 1 && type < 3){
             if(ord >= 2 && hasHiddenChow(cid - 2))hasSuit[type] = true;
@@ -543,8 +622,21 @@ public:
         return best;
     }
 
-    double evaluatePengPengHu(){
+    void evaluateWuMenQiInit(bool *hasPair, bool *hasSuit){
+        for(int i = 0; i < 5; ++i){
+            hasPair[i] = hasSuit[i] = false;
+        }
 
+        for(auto it = showCards.begin(); it != showCards.end(); ++it){
+            int type = tileType[it -> second];
+            hasSuit[type] = true;
+        }
+
+        for(int i = 0; i < 34; ++i){
+            int type = tileType[i];
+            if(hasHiddenChow(i) || hasHiddenPung(i))hasSuit[type] = true;
+            if(hasHiddenPair(i))hasPair[type] = true;
+        }
     }
 
     double evaluateWuMenQi(){
@@ -566,15 +658,19 @@ public:
         while(round--){
             int curRound = 0;
 
-            for(int i = 0; i < 5; ++i)hasPair[i] = hasSuit[i] = false;
+            evaluateWuMenQiInit(hasPair, hasSuit);
 
             while(!(myDeck -> isEmpty()) && curRound < maxRound){
                 curRound++;
                 int cid = myDeck -> drawCard();
 
+               // cid = 27;
+
                 if(cid == -1) break;
 
                 hidden[cid]++;
+
+                addToHE(cid);
 
                 int curSuits = evaluateWuMenQiSuits(hasPair, hasSuit, cid);
 
@@ -589,7 +685,11 @@ public:
             memcpy(hidden, tmp, sizeof(tmp));
         }
 
-        return calcValue(cntsWin, maxRound);
+        double wuMenQiValue = calcValue(cntsWin, maxRound);
+
+        //printf("WuMenQi: %.4lf\n", wuMenQiValue);
+
+        return wuMenQiValue;
     }
 
     double evaluateQiDuiZi(){
@@ -677,7 +777,7 @@ public:
 
         ed = clock();
 
-        printf("Time cost: %d ms. \n", (ed - st) * 1000 / CLOCKS_PER_SEC);
+        printf("Time cost: %d ms. \n", (int)((ed - st) * 1000 / CLOCKS_PER_SEC));
     }
 
     double getWeightValue(){
@@ -745,7 +845,6 @@ void init(){
         if(type == 3)tileNameTenhou[i][1] = 'z';
     }
 }
-
 
 
 int main()

@@ -25,7 +25,7 @@ vector<pair<int, string> > MahjongFanCalculator(
     int quanFeng)
 {
 
-    vector<pair<int,string>> ans;
+    vector<pair<int, string>> ans;
     mahjong::calculate_param_t calculate_param;
     mahjong::fan_table_t fan_table;
     memset(&calculate_param, 0, sizeof(mahjong::calculate_param_t));

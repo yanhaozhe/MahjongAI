@@ -10,6 +10,13 @@ const double baseValueQiDuiZi[8] = {0.01,0.02,0.04,0.2,1.25,25,500,10000.0};
 const int tileType[34] = {0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,4,4,4};
 const int tileOrd[34] =  {0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,0,1,2};
 
+const string names[34] = {"W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9",
+							 "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9",
+							 "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9",
+							 "F1", "F2", "F3", "F4",
+							 "J1", "J2", "J3"
+							};
+
 
 
 
@@ -912,6 +919,10 @@ void init(){
     }
 }
 
+void testCalc(Hands &myHand){
+    vector<pair<int, string> > ssdf;
+
+}
 
 int main()
 {
@@ -931,6 +942,7 @@ int main()
 
     myHand.playTile();
 
+    testCalc(myHand);
 
     return 0;
 }

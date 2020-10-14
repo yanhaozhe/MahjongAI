@@ -10,6 +10,8 @@ const int tileType[34] = {0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,
 const int tileOrd[34] =  {0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,0,1,2};
 
 
+
+
 char tileNameTenhou[34][3];
 
 class CardDeck{
@@ -164,7 +166,7 @@ public:
 
     int tmp[34];
 
-    static const int MAX_ROUND = 1024;
+    static const int MAX_ROUND = 8192;
 
     HandElements he;
     allTripleFlushesFan tf;
@@ -369,7 +371,7 @@ public:
         int acc = 0;
         double accScore = 0.0;
 
-        double ra = 1.0, decayRate = 0.79, accRate = 0.0;
+        double ra = 1.0, decayRate = 0.4, accRate = 0.0;
 
         for(int i = 0; i < maxRound; ++i){
             acc += cntsWin[i];
@@ -486,117 +488,34 @@ public:
             }
         }
 
-        if(ok1 && ok2 && ok3 && usedOrgTiles >= 5)
+        if(ok1 && ok2 && ok3 && usedOrgTiles >= 6)
             return res;
         memcpy(hidden, tmp, sizeof(tmp));
         return -1;
     }
 
-    double evaluateWeightValue(){
-        int round = MAX_ROUND;
 
-        myDeck -> reset(1);
-
-        const int maxRound = min(21, remainTiles);
-
-        int cntsWin[81][maxRound];
-        int tmp[34];
-
-        memcpy(tmp, hidden, sizeof(hidden));
-        memset(cntsWin, 0, sizeof(cntsWin));
-
-        updateHE();
-
-        while(round--){
-            int curRound = 0;
-
-            while(!(myDeck -> isEmpty()) && curRound < maxRound){
-
-                curRound++;
-                int cid = myDeck -> drawCard();
-
-                if(cid == -1) break;
-
-                hidden[cid]++;
-
-                //addToHE(cid);
-                updateHE();
-
-                if(winTripleFlushesFans(tmp, tf.sanSeSanTongShun)){
-                    cntsWin[0][curRound]++;
-                    break;
-                }
-
-            }
-
-            myDeck -> reset(1);
-
-            memcpy(hidden, tmp, sizeof(tmp));
-        }
-
-//        return calcValue(cntsWin, maxRound);
-        return 0.0;
-    }
-
-  /*  double evaluateSanSeSanTongShun(){
-        int round = MAX_ROUND;
-
-        myDeck -> reset(1);
-
-        const int maxRound = min(21, remainTiles);
-
-        int cntsWin[maxRound];
-        int tmp[34];
-
-        memcpy(tmp, hidden, sizeof(hidden));
-        memset(cntsWin, 0, sizeof(cntsWin));
-
-        updateHE();
-
-        while(round--){
-            int curRound = 0;
-
-            while(!(myDeck -> isEmpty()) && curRound < maxRound){
-
-                curRound++;
-                int cid = myDeck -> drawCard();
-
-                if(cid == -1) break;
-
-                hidden[cid]++;
-
-                //addToHE(cid);
-                updateHE();
-
-                if(winTripleFlushesFans(tf.sanSeSanTongShun)){
-                    cntsWin[curRound]++;
-                    break;
-                }
-
-            }
-
-            myDeck -> reset(1);
-
-            memcpy(hidden, tmp, sizeof(tmp));
-        }
-
-        double valueSanSeSanTongShun = calcValue(cntsWin, maxRound);
-
-        printf("SanSeSanTongShun: %.4lf\n", valueSanSeSanTongShun);
-
-        return valueSanSeSanTongShun;
-    }*/
-
-    bool checkOnePairWithOneSuits(int usedSuits){
+    bool checkOnePairWithOneSuits(int *orgTiles, int usedSuits){
         int extraSuit = showCards.size() - usedSuits;
 
         for(int i = 0; i < 34; ++i){
-            if(hidden[i] >= 2){
+            if(hidden[i] >= 2 && orgTiles[i]){
                 hidden[i] -= 2;
+
                 if(extraSuit)return true;
+
+                int sub = min(orgTiles[i], 2);
+                orgTiles[i] -= sub;
+
                 for(int j = 0; j < 34; ++j){
-                    if(hasHiddenChow(j) || hasHiddenPung(j))return true;
+                    if((hasHiddenChow(j) && countOrgTiles(orgTiles, j, j + 1, j + 2) >= 2)|| (hasHiddenPung(j) && countOrgTiles(orgTiles, j, j, j) >= 2))
+                    {
+                        orgTiles[i] += sub;
+                        return true;
+                    }
                 }
+
+                orgTiles[i] += sub;
 
                 hidden[i] += 2;
             }
@@ -619,7 +538,7 @@ public:
             int val = checkAndExcludeThreeFlushes(orgTiles, cur -> cid1, cur -> cid2, cur -> cid3);
 
             if(val != -1){
-                if(checkOnePairWithOneSuits(val))return true;
+                if(checkOnePairWithOneSuits(orgTiles, val))return true;
             }
         }
 
@@ -753,7 +672,7 @@ public:
 
         double wuMenQiValue = calcValue("WuMenQi", cntsWin, maxRound);
 
-        //printf("WuMenQi: %.4lf\n", wuMenQiValue);
+        printf("WuMenQi: %.4lf\n", wuMenQiValue);
 
         return wuMenQiValue;
     }
@@ -809,7 +728,7 @@ public:
             double curValue = calcValue(tripleFlushFansName[i], cntsWin[i], maxRound);
             values.push_back(curValue);
 
-            printf("%s Value: %.4lf\n", tripleFlushFansName[i], curValue);
+            //printf("%s Value: %.4lf\n", tripleFlushFansName[i], curValue);
         }
 
         memcpy(hidden, tmp, sizeof(tmp));
@@ -923,7 +842,8 @@ public:
         sort(values.begin(), values.end());
 
         int n = values.size();
-        double curWeight = 1.4, decayRate = 0.89, acc = 0.0;
+
+        double curWeight = 1.4, decayRate = 0.4, acc = 0.0;
         double value = 0.0;
         for(int i = n - 1; i >= 0; --i){
             value += curWeight * values[i];
@@ -958,6 +878,17 @@ public:
         }
 
         return bestChoice;
+    }
+
+    int mingPai(int cid){
+
+        int curValue = getWeightValue();
+
+        int type = tileType[cid],  ord = tileOrd[cid];
+
+        if(type < 3){ // canChi
+            if(ord >= 2)return 0;
+        }
     }
 };
 

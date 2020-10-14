@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1602571358 source:d:\ssd\chinesemahjongai\evaluate\main.cpp
+1602680331 source:d:\ssd\chinesemahjongai\evaluate\main.cpp
 	<bits/stdc++.h>
 
 1602488491 d:\ssd\chinesemahjongai\evaluate\include\carddeck.h
@@ -28,4 +28,134 @@
 1602488566 source:d:\chinesemahjongai\evaluate\src\carddeck.cpp
 	"CardDeck.h"
 	<bits/stdc++.h>
+
+1589193921 d:\ssd\chinesemahjongai\evaluate\mahjonggb\mahjonggb.h
+	<utility>
+	<vector>
+	<string>
+	"MahjongGB.cpp"
+	"../../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/fan_calculator.cpp"
+	"../../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/shanten.cpp"
+
+1602679972 d:\ssd\chinesemahjongai\evaluate\mahjonggb\mahjonggb.cpp
+	"MahjongGB.h"
+	<algorithm>
+	<utility>
+	<vector>
+	<string>
+	<unordered_map>
+	"../mahjong-algorithm/fan_calculator.h"
+	<cstring>
+	<iostream>
+
+1589193921 d:\ssd\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\fan_calculator.h
+	"tile.h"
+
+1589193921 d:\ssd\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\tile.h
+	<stddef.h>
+	<stdint.h>
+
+1589193921 d:\ssd\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\fan_calculator.cpp
+	"fan_calculator.h"
+	<assert.h>
+	<stddef.h>
+	<string.h>
+	<algorithm>
+	<iterator>
+	"standard_tiles.h"
+	"shanten.h"
+
+1589193921 d:\ssd\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\standard_tiles.h
+	"tile.h"
+
+1589193921 d:\ssd\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\shanten.h
+	"tile.h"
+
+1589193921 d:\ssd\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\shanten.cpp
+	"shanten.h"
+	<assert.h>
+	<string.h>
+	<limits>
+	<algorithm>
+	<iterator>
+	"standard_tiles.h"
+
+1589193921 source:d:\ssd\chinesemahjongai\evaluate\mahjong-algorithm\fan_calculator.cpp
+	"fan_calculator.h"
+	<assert.h>
+	<stddef.h>
+	<string.h>
+	<algorithm>
+	<iterator>
+	"standard_tiles.h"
+	"shanten.h"
+
+1589193921 d:\ssd\chinesemahjongai\evaluate\mahjong-algorithm\fan_calculator.h
+	"tile.h"
+
+1589193921 d:\ssd\chinesemahjongai\evaluate\mahjong-algorithm\tile.h
+	<stddef.h>
+	<stdint.h>
+
+1589193921 d:\ssd\chinesemahjongai\evaluate\mahjong-algorithm\standard_tiles.h
+	"tile.h"
+
+1589193921 d:\ssd\chinesemahjongai\evaluate\mahjong-algorithm\shanten.h
+	"tile.h"
+
+1589193921 source:d:\ssd\chinesemahjongai\evaluate\mahjong-algorithm\shanten.cpp
+	"shanten.h"
+	<assert.h>
+	<string.h>
+	<limits>
+	<algorithm>
+	<iterator>
+	"standard_tiles.h"
+
+1589193921 source:d:\ssd\chinesemahjongai\evaluate\mahjong-algorithm\stringify.cpp
+	"stringify.h"
+	<string.h>
+	<algorithm>
+	<iterator>
+
+1589193921 d:\ssd\chinesemahjongai\evaluate\mahjong-algorithm\stringify.h
+	"tile.h"
+
+1589193921 source:d:\ssd\chinesemahjongai\evaluate\mahjong-algorithm\unit_test.cpp
+	"shanten.h"
+	"stringify.h"
+	"fan_calculator.h"
+	<stdio.h>
+	<iostream>
+	<limits>
+	<assert.h>
+	<time.h>
+	"stringify.cpp"
+	"shanten.cpp"
+	"fan_calculator.cpp"
+
+1589193921 d:\ssd\chinesemahjongai\evaluate\mahjong-algorithm\stringify.cpp
+	"stringify.h"
+	<string.h>
+	<algorithm>
+	<iterator>
+
+1589193921 d:\ssd\chinesemahjongai\evaluate\mahjong-algorithm\shanten.cpp
+	"shanten.h"
+	<assert.h>
+	<string.h>
+	<limits>
+	<algorithm>
+	<iterator>
+	"standard_tiles.h"
+
+1589193921 d:\ssd\chinesemahjongai\evaluate\mahjong-algorithm\fan_calculator.cpp
+	"fan_calculator.h"
+	<assert.h>
+	<stddef.h>
+	<string.h>
+	<algorithm>
+	<iterator>
+	"standard_tiles.h"
+	"shanten.h"
 

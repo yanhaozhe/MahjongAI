@@ -434,7 +434,12 @@ public:
         hidden[cid + 2]--;
     }
 
-    int checkAndExcludeThreeFlushes(int cid1, int cid2, int cid3){
+    int countOrgTiles(int *orgTiles, int cid1, int cid2, int cid3){
+        if(cid1 == cid2 && cid2 == cid3)return orgTiles[cid1];
+        return (orgTiles[cid1] > 0) + (orgTiles[cid2] > 0) + (orgTiles[cid3] > 0);
+    }
+
+    int checkAndExcludeThreeFlushes(int *orgTiles, int cid1, int cid2, int cid3){
         if(cid1 > cid2)swap(cid1, cid2);
         if(cid1 > cid3)swap(cid1, cid3);
         if(cid2 > cid3)swap(cid2, cid3);
@@ -445,34 +450,43 @@ public:
         ok1 = ok2 = ok3 = false;
 
         int res = 0;
+
+        int usedOrgTiles = 0;
+
         for(auto it = showCards.begin(); it != showCards.end(); ++it){
             //if()
             if(it -> first == 0){
-                if(!ok1 && it -> second == cid1){ok1 = true; res++;}
-                if(!ok2 && it -> second == cid2){ok2 = true; res++;}
-                if(!ok3 && it -> second == cid3){ok3 = true; res++;}
+                if(!ok1 && it -> second == cid1){ok1 = true; usedOrgTiles += 3; res++;}
+                if(!ok2 && it -> second == cid2){ok2 = true; usedOrgTiles += 3; res++;}
+                if(!ok3 && it -> second == cid3){ok3 = true; usedOrgTiles += 3; res++;}
             }
         }
 
         if(!ok1){
             if(hasHiddenChow(cid1)){
-                ok1 = true; excludeSingleFlush(cid1);
+                ok1 = true;
+                usedOrgTiles += countOrgTiles(orgTiles, cid1, cid1 + 1, cid1 + 2);
+                excludeSingleFlush(cid1);
             }
         }
 
          if(!ok2){
             if(hasHiddenChow(cid2)){
-                ok2 = true;  excludeSingleFlush(cid2);
+                ok2 = true;
+                usedOrgTiles += countOrgTiles(orgTiles, cid2, cid2 + 1, cid2 + 2);
+                excludeSingleFlush(cid2);
             }
         }
 
          if(!ok3){
             if(hasHiddenChow(cid3)){
-                ok3 = true;  excludeSingleFlush(cid3);
+                ok3 = true;
+                usedOrgTiles += countOrgTiles(orgTiles, cid3, cid3 + 1, cid3 + 2);
+                excludeSingleFlush(cid3);
             }
         }
 
-        if(ok1 && ok2 && ok3)
+        if(ok1 && ok2 && ok3 && usedOrgTiles >= 5)
             return res;
         memcpy(hidden, tmp, sizeof(tmp));
         return -1;
@@ -508,7 +522,7 @@ public:
                 //addToHE(cid);
                 updateHE();
 
-                if(winTripleFlushesFans(tf.sanSeSanTongShun)){
+                if(winTripleFlushesFans(tmp, tf.sanSeSanTongShun)){
                     cntsWin[0][curRound]++;
                     break;
                 }
@@ -591,7 +605,7 @@ public:
         return false;
     }
 
-    bool winTripleFlushesFans(vector<tripleFlushes> &arr){
+    bool winTripleFlushesFans(int *orgTiles, vector<tripleFlushes> &arr){
 
         memcpy(tmp, hidden, sizeof(tmp));
 
@@ -602,7 +616,7 @@ public:
 
             tripleFlushes* cur = &arr[i];
 
-            int val = checkAndExcludeThreeFlushes(cur -> cid1, cur -> cid2, cur -> cid3);
+            int val = checkAndExcludeThreeFlushes(orgTiles, cur -> cid1, cur -> cid2, cur -> cid3);
 
             if(val != -1){
                 if(checkOnePairWithOneSuits(val))return true;
@@ -765,7 +779,7 @@ public:
             memset(isWin, 0, sizeof(isWin));
 
             while(!(myDeck -> isEmpty()) && curRound < maxRound){
-                curRound++;
+
                 int cid = myDeck -> drawCard();
 
                 if(cid == -1) break;
@@ -775,13 +789,14 @@ public:
 
                 for(int i = 0; i < 4; ++i){
                     memcpy(tmp2, hidden,sizeof(tmp2));
-                    if(i == 2 && !isWin[i] && winTripleFlushesFans(*tfPointers[i])){
+                    if(!isWin[i] && winTripleFlushesFans(tmp, *tfPointers[i])){
                         isWin[i] = true; cntsWin[i][curRound]++;
                     }
 
                     memcpy(hidden, tmp2, sizeof(tmp2));
                 }
 
+                curRound++;
 
             }
 
@@ -908,7 +923,7 @@ public:
         sort(values.begin(), values.end());
 
         int n = values.size();
-        double curWeight = 1.4, decayRate = 0.45, acc = 0.0;
+        double curWeight = 1.4, decayRate = 0.89, acc = 0.0;
         double value = 0.0;
         for(int i = n - 1; i >= 0; --i){
             value += curWeight * values[i];

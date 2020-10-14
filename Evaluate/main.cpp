@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+#include "Mahjong-GB-CPP/MahjongGB/MahjongGB.h"
 using namespace std;
 
 const char* tripleFlushFansName[] = {"SanSeSanTongShun", "SanSeSanBuGao", "QingLong", "HuaLong"};

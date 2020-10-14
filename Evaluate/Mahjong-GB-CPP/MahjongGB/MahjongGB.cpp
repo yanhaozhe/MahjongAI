@@ -24,6 +24,7 @@ vector<pair<int, string> > MahjongFanCalculator(
     int menFeng,
     int quanFeng)
 {
+
     vector<pair<int,string>> ans;
     mahjong::calculate_param_t calculate_param;
     mahjong::fan_table_t fan_table;
@@ -96,3 +97,4 @@ void MahjongInit()
         str2tile["J" + to_string((i))] = mahjong::make_tile(TILE_SUIT_HONORS, i + 4);
     }
 }
+

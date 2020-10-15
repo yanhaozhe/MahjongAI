@@ -855,8 +855,8 @@ public:
 
                 hidden[i]++;
 
-                //printf("WeightedValue: %.4lf\n" , curValue);
-                //printf("\n");
+               // printf("WeightedValue: %.4lf\n" , curValue);
+              //  printf("\n");
 
                 if(curValue > bestValue){
                     bestChoice = i;
@@ -914,6 +914,17 @@ public:
         return ans;
     }
 
+    void debugOutput(){
+        for(int i = 0; i < showCards.size(); ++i){
+            printf("%d %d\n", showCards[i].first, showCards[i].second);
+        }
+
+        for(int i = 0; i < 34; ++i){
+            for(int j = 0; j < hidden[i]; ++j){
+                cout << tileName[i];
+            }
+        }
+    }
 };
 
 void init(){
@@ -1068,8 +1079,11 @@ void myGamePlay(Hands &myHand){
 
                 else if(itmp == 3){ //Other's player
                     stmp.clear();
-                    sin >> stmp >> stmp;
+                    string sid;
+                    sin >> sid >> stmp;
                     int outCID = -1;
+
+                    int playerID = sid[0] - '0';
 
                     if(stmp == "DRAW"){ // DRAW
                         lastTile = -1;
@@ -1079,7 +1093,14 @@ void myGamePlay(Hands &myHand){
                     else if(stmp == "PENG"){ //PENG
                         sin >> stmp;
                         outCID = tileNameID[stmp];
-                        if(lastTile != -1){
+
+                        if(playerID == menFeng){
+                            myHand.showCards.push_back({1, lastTile});
+                            myHand.hidden[lastTile] -= 2;
+                            myHand.discardTile(outCID, true);
+                        }
+
+                        else{
                             myHand.deductRemain(lastTile);
                             myHand.deductRemain(lastTile);
                         }
@@ -1096,8 +1117,17 @@ void myGamePlay(Hands &myHand){
 
                         outCID = tileNameID[stmp];
 
-                        for(int k = midCID - 1; k <= midCID + 1; ++k)
-                            if(k != lastTile)myHand.deductRemain(k);
+                        if(playerID == menFeng){
+                            myHand.showCards.push_back({0, midCID - 1});
+                            for(int k = midCID - 1; k <= midCID + 1; ++k)
+                                if(k != lastTile)myHand.hidden[k]--;
+                            myHand.discardTile(outCID, true);
+                        }
+
+                        else {
+                            for(int k = midCID - 1; k <= midCID + 1; ++k)
+                                if(k != lastTile)myHand.deductRemain(k);
+                        }
 
                         lastTile = outCID;
                     }
@@ -1196,9 +1226,9 @@ void myGamePlay(Hands &myHand){
             if(outCID != -1){
                 lastTile = outCID;
 
-                //int curFan = calcFan(myHand, outCID, false);
+                int curFan = calcFan(myHand, outCID, false);
 
-                int curFan = 7;
+                //int curFan = 7;
                 if(curFan >= 8)sout << "HU";
                 else {
 
@@ -1214,6 +1244,8 @@ void myGamePlay(Hands &myHand){
                     int bestChoice = -1, arg1, arg2;
 
                     Hands tmpHand = myHand;
+
+                    Hands bestTmpHand;
 
                     double tmpValue, playCID;
 
@@ -1233,17 +1265,20 @@ void myGamePlay(Hands &myHand){
 
                             playCID = tmpHand.playTile(tmpValue);
 
-                            tmpHand.showCards.pop_back();
-                            tmpHand.showCards.shrink_to_fit();
-                            tmpHand.hidden[x - 2]++;
-                            tmpHand.hidden[x - 1]++;
-
                             if(tmpValue > bestValue){
+                                bestTmpHand = tmpHand;
                                 bestValue = tmpValue;
                                 bestChoice = 0;
                                 arg1 = x - 1;
                                 arg2 = playCID;
                             }
+
+                            tmpHand.showCards.pop_back();
+                            tmpHand.showCards.shrink_to_fit();
+                            tmpHand.hidden[x - 2]++;
+                            tmpHand.hidden[x - 1]++;
+
+
                         }
 
                         if(outOrd >= 1 && outOrd < 8 && tmpHand.hidden[x - 1] && tmpHand.hidden[x + 1]){
@@ -1253,17 +1288,20 @@ void myGamePlay(Hands &myHand){
 
                             int playCID = tmpHand.playTile(tmpValue);
 
-                            tmpHand.showCards.pop_back();
-                            tmpHand.showCards.shrink_to_fit();
-                            tmpHand.hidden[x - 1]++;
-                            tmpHand.hidden[x + 1]++;
-
                             if(tmpValue > bestValue){
+                                bestTmpHand = tmpHand;
                                 bestValue = tmpValue;
                                 bestChoice = 0;
                                 arg1 = x;
                                 arg2 = playCID;
                             }
+
+                            tmpHand.showCards.pop_back();
+                            tmpHand.showCards.shrink_to_fit();
+                            tmpHand.hidden[x - 1]++;
+                            tmpHand.hidden[x + 1]++;
+
+
                         }
 
                         if(outOrd < 7 && tmpHand.hidden[x + 1] && tmpHand.hidden[x + 2]){
@@ -1273,17 +1311,20 @@ void myGamePlay(Hands &myHand){
 
                             int playCID = tmpHand.playTile(tmpValue);
 
-                            tmpHand.showCards.pop_back();
-                            tmpHand.showCards.shrink_to_fit();
-                            tmpHand.hidden[x + 2]++;
-                            tmpHand.hidden[x + 1]++;
-
                             if(tmpValue > bestValue){
+                                bestTmpHand = tmpHand;
                                 bestValue = tmpValue;
                                 bestChoice = 0;
                                 arg1 = x + 1;
                                 arg2 = playCID;
                             }
+
+                            tmpHand.showCards.pop_back();
+                            tmpHand.showCards.shrink_to_fit();
+                            tmpHand.hidden[x + 2]++;
+                            tmpHand.hidden[x + 1]++;
+
+
                         }
                     }
 
@@ -1295,22 +1336,28 @@ void myGamePlay(Hands &myHand){
 
                         int playCID = tmpHand.playTile(tmpValue);
 
-                        tmpHand.showCards.pop_back();
-                        tmpHand.showCards.shrink_to_fit();
-                        tmpHand.hidden[x] += 2;
-
                         if(tmpValue > bestValue){
+                            bestTmpHand = tmpHand;
                             bestValue = tmpValue;
                             bestChoice = 1;
                             arg1 = x;
                             arg2 = playCID;
                         }
+
+                        tmpHand.showCards.pop_back();
+                        tmpHand.showCards.shrink_to_fit();
+                        tmpHand.hidden[x] += 2;
+
+
                     }
 
 
                     if(bestChoice != -1 && bestValue > 1.25 && bestValue / curValue >= 1.5){
+
                         if(bestChoice == 0) sout << "CHI" << " " << tileName[arg1] << " " << tileName[arg2];
                         else if(bestChoice == 1) sout << "PENG" << " " << tileName[arg2];
+
+                        myHand = bestTmpHand;
                     }
 
                     else{
@@ -1341,7 +1388,7 @@ void myGamePlay(Hands &myHand){
 
 int main()
 {
-   // freopen("test.txt", "r", stdin);
+    freopen("test.txt", "r", stdin);
 
     init();
 
@@ -1353,8 +1400,9 @@ int main()
 
     myDeck.setTiles(myHand.remains);
 
-
     myGamePlay(myHand);
+
+    //myHand.debugOutput();
 
     return 0;
 }

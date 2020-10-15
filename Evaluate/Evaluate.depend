@@ -20,8 +20,9 @@
 	"CardDeck.h"
 	<bits/stdc++.h>
 
-1602672863 source:d:\chinesemahjongai\evaluate\main.cpp
+1602743085 source:d:\chinesemahjongai\evaluate\main.cpp
 	<bits/stdc++.h>
+	"Mahjong-GB-CPP/MahjongGB/MahjongGB.h"
 
 1602488491 d:\chinesemahjongai\evaluate\include\carddeck.h
 	<vector>
@@ -246,4 +247,61 @@
 	"../../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/fan_calculator.h"
 	<cstring>
 	<iostream>
+
+1602740787 source:d:\chinesemahjongai\evaluate\chineseofficialmahjonghelper\classes\mahjong-algorithm\fan_calculator.cpp
+	"fan_calculator.h"
+	<assert.h>
+	<stddef.h>
+	<string.h>
+	<algorithm>
+	<iterator>
+	"standard_tiles.h"
+	"shanten.h"
+
+1602740787 d:\chinesemahjongai\evaluate\chineseofficialmahjonghelper\classes\mahjong-algorithm\fan_calculator.h
+	"tile.h"
+
+1602740787 d:\chinesemahjongai\evaluate\chineseofficialmahjonghelper\classes\mahjong-algorithm\tile.h
+	<stddef.h>
+	<stdint.h>
+
+1602740787 d:\chinesemahjongai\evaluate\chineseofficialmahjonghelper\classes\mahjong-algorithm\standard_tiles.h
+	"tile.h"
+
+1602740787 d:\chinesemahjongai\evaluate\chineseofficialmahjonghelper\classes\mahjong-algorithm\shanten.h
+	"tile.h"
+
+1602740787 source:d:\chinesemahjongai\evaluate\chineseofficialmahjonghelper\classes\mahjong-algorithm\shanten.cpp
+	"shanten.h"
+	<assert.h>
+	<string.h>
+	<limits>
+	<algorithm>
+	<iterator>
+	"standard_tiles.h"
+
+1602740787 source:d:\chinesemahjongai\evaluate\chineseofficialmahjonghelper\classes\mahjong-algorithm\stringify.cpp
+	"stringify.h"
+	<string.h>
+	<algorithm>
+	<iterator>
+
+1602740787 d:\chinesemahjongai\evaluate\chineseofficialmahjonghelper\classes\mahjong-algorithm\stringify.h
+	"tile.h"
+
+1602740787 source:d:\chinesemahjongai\evaluate\mahjong-gb-cpp\mahjonggb\mahjonggb.cpp
+	"MahjongGB.h"
+	<algorithm>
+	<utility>
+	<vector>
+	<string>
+	<unordered_map>
+	"../../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/fan_calculator.h"
+	<cstring>
+	<iostream>
+
+1602740787 d:\chinesemahjongai\evaluate\mahjong-gb-cpp\mahjonggb\mahjonggb.h
+	<utility>
+	<vector>
+	<string>
 

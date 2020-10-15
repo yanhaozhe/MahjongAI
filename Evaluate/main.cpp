@@ -1,6 +1,20 @@
 #include<bits/stdc++.h>
 #include "Mahjong-GB-CPP/MahjongGB/MahjongGB.h"
+
+#define _BOTZONE_ONLINE
+#ifdef _BOTZONE_ONLINE
+#include "jsoncpp/json.h"
+#else
+#include <json/json.h>
+#endif
+
+#define SIMPLEIO 0
+
 using namespace std;
+
+vector<string> request, response;
+
+
 
 const char* tripleFlushFansName[] = {"SanSeSanTongShun", "SanSeSanBuGao", "QingLong", "HuaLong"};
 int tilesRange[5][34];
@@ -10,12 +24,16 @@ const double baseValueQiDuiZi[8] = {0.01,0.02,0.04,0.2,1.25,25,500,10000.0};
 const int tileType[34] = {0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,4,4,4};
 const int tileOrd[34] =  {0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,0,1,2};
 
-const string names[34] = {"W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9",
+const string tileName[34] = {"W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9",
+                             "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9",
 							 "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9",
-							 "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9",
 							 "F1", "F2", "F3", "F4",
 							 "J1", "J2", "J3"
 							};
+
+unordered_map<string, int> tileNameID;
+
+const string showTypeName[3] = {"CHI","PENG","GANG"};
 
 
 
@@ -171,10 +189,9 @@ class Hands{
 public:
     int tiles[34], remains[34];
     int shown[34], hidden[34];
-
     int tmp[34];
 
-    static const int MAX_ROUND = 8192;
+    static const int MAX_ROUND = 500;
 
     HandElements he;
     allTripleFlushesFan tf;
@@ -188,13 +205,12 @@ public:
     vector<pair<int, int> > showCards; // 0: Chow 1: Pung 2: Kung
     CardDeck *myDeck;
 
-    Hands(char *str){
+    Hands(){
         memset(tiles, 0, sizeof(tiles));
 
         myDeck = NULL;
 
-        int n = strlen(str);
-        int i = 0, j, offset;
+
 
         remainTiles = 21;
 
@@ -207,7 +223,18 @@ public:
         tfPointers[2] = &tf.qingLong;
         tfPointers[3] = &tf.huaLong;
 
+        for(int i = 0; i < 34; ++i){
+            hidden[i] = 0;
+            remains[i] = 4;
+        }
+    }
 
+    Hands(char *str){
+
+        Hands();
+
+        int n = strlen(str);
+        int i = 0, j, offset;
 
         while(i < n){
             j = i;
@@ -284,22 +311,21 @@ public:
         myDeck = &newDeck;
     }
 
-    void addRemain(int cid){
-        remains[cid]++;
-    }
-
-    void removeRemain(int cid){
+    void deductRemain(int cid){
         remains[cid]--;
     }
 
     void addTile(int cid){
         hidden[cid]++;
-        removeRemain(cid);
+        deductRemain(cid);
     }
 
-    void removeTile(int cid){
-        hidden[cid]--;
-        addRemain(cid);
+    void discardTile(int cid, bool isSelf){
+        if(isSelf)
+            hidden[cid]--;
+
+        else
+            deductRemain(cid);
     }
 
     void output(){
@@ -898,11 +924,46 @@ public:
             if(ord >= 2)return 0;
         }
     }
+
+    vector<string> hand2stdHand(){
+        vector<string> ans;
+        ans.clear();
+        for(int i = 0; i < 34; ++i){
+            for(int j = 0; j < hidden[i]; ++j){
+                ans.push_back(tileName[i]);
+            }
+        }
+
+        return ans;
+    }
+
+    vector<pair<string, pair<string, int> > > hand2stdPack(){
+        vector<pair<string, pair<string, int> > > ans;
+        ans.clear();
+
+        int m = showCards.size();
+
+        for(int i = 0; i < m; ++i){
+            string showType = showTypeName[showCards[i].first];
+            int cid = showCards[i].second;
+            string showCardNames = tileName[cid];
+            int cardFromID = 1;
+
+
+            ans.push_back({showType, {showCardNames, cardFromID} });
+        }
+
+        return ans;
+    }
+
 };
 
 void init(){
     memset(tilesRange, 0, sizeof(tilesRange));
     memset(tileNameTenhou, 0, sizeof(tileNameTenhou));
+
+    MahjongInit();
+
     for(int i = 0; i < 9; ++i)tilesRange[0][i] = true;
     for(int i = 9; i < 18; ++i)tilesRange[1][i] = true;
     for(int i = 18; i < 27; ++i)tilesRange[2][i] = true;
@@ -916,17 +977,269 @@ void init(){
         if(type == 1)tileNameTenhou[i][1] = 's';
         if(type == 2)tileNameTenhou[i][1] = 'p';
         if(type == 3)tileNameTenhou[i][1] = 'z';
+
+        tileNameID[tileName[i]] = i;
     }
 }
 
-void testCalc(Hands &myHand){
-    vector<pair<int, string> > ssdf;
+int calcFan(Hands &myHand, int winCid){
 
+
+    /* format:
+     MahjongFanCalculator(
+    vector<pair<string, pair<string, int> > > pack,
+    vector<string> hand,
+    string winTile,
+    int flowerCount,
+    bool isZIMO,
+    bool isJUEZHANG,
+    bool isGANG,
+    bool isLAST,
+    int menFeng,
+    int quanFeng)
+    */
+
+    vector<pair<string, pair<string, int> > > pack = myHand.hand2stdPack();
+    vector<string> hand = myHand.hand2stdHand();
+    string winTile = tileName[winCid];
+    int flowerCount = 0;
+    bool isZIMO = false;
+    bool isJUEZHANG = false;
+    bool isGANG = false;
+    bool isLAST = false;
+    int menFeng = 0;
+    int quanFeng = 1;
+    int countFan = 0;
+
+    try{
+        auto re = MahjongFanCalculator(pack, hand, winTile, flowerCount, isZIMO, isJUEZHANG, isGANG, isLAST, menFeng, quanFeng);
+        //auto re = MahjongFanCalculator({{"GANG",{"W1",1}},{"CHI",{"T2",2}}},{"W3","W3","W3","W4","W4","W4","W5"},"W5",1,0,0,0,0,0,0);
+
+        for(auto i : re){
+            countFan += i.first;
+            cout << i.first << " " << i.second << endl;
+        }
+
+        printf("Total: %d Fans.\n", countFan);
+    }
+
+    catch(const string &error){
+        cout << error << endl;
+        countFan = -1;
+    }
+
+    return countFan;
+}
+
+void myGamePlay(Hands &myHand){
+    int turnID;
+    string stmp;
+
+    #if SIMPLEIO
+        cin >> turnID;
+        turnID--;
+
+        getline(cin, stmp);
+        for(int i = 0; i < turnID; i++) {
+            getline(cin, stmp);
+            request.push_back(stmp);
+            getline(cin, stmp);
+            response.push_back(stmp);
+        }
+        getline(cin, stmp);
+        request.push_back(stmp);
+    #else
+        Json::Value inputJSON;
+        cin >> inputJSON;
+        turnID = inputJSON["responses"].size();
+        for(int i = 0; i < turnID; i++) {
+            request.push_back(inputJSON["requests"][i].asString());
+            response.push_back(inputJSON["responses"][i].asString());
+        }
+        request.push_back(inputJSON["requests"][turnID].asString());
+
+    #endif
+
+
+        if(turnID < 2) {
+            response.push_back("PASS");
+        } else {
+
+            int itmp, myPlayerID, quan;
+
+            int lastTile = -1;
+
+            ostringstream sout;
+            istringstream sin;
+            sin.str(request[0]);
+            sin >> itmp >> myPlayerID >> quan;
+
+            sin.clear();
+            sin.str(request[1]);
+
+            for(int j = 0; j < 5; j++) sin >> itmp;
+            for(int j = 0; j < 13; j++) {
+                sin >> stmp;
+                myHand.addTile(tileNameID[stmp]);
+            }
+
+            for(int i = 2; i < turnID; i++) { // Exe
+                sin.clear();
+                sin.str(request[i]);
+                sin >> itmp;
+
+                if(itmp == 2) { // Draw Card
+                    sin >> stmp;
+
+                    myHand.addTile(tileNameID[stmp]);
+
+                    sin.clear();
+                    sin.str(response[i]);
+                    sin >> stmp >> stmp;
+                    hand.erase(find(hand.begin(), hand.end(), stmp));
+
+                    removetile(stmp);
+                }
+
+                else if(itmp == 3){ // itmp == 3
+                    stmp.clear();
+                    sin >> stmp >> stmp;
+                    int outCID = -1;
+                    if(stmp[0] == 'P' && stmp[1] == 'E'){ //PENG
+                        sin >> stmp;
+                        outCID = tileToInt(stmp);
+                        if(lastTile != -1)remain[lastTile] -= 2;
+                    }
+
+                    if(stmp[0] == 'C'){ //CHI
+                        sin >> stmp;
+                        int midCID = tileToInt(stmp);
+                        sin >> stmp;
+                        outCID = tileToInt(stmp);
+
+                        for(int k = midCID - 1; k <= midCID + 1; ++k)
+                            if(k != lastTile)remain[k] -= 1;
+                    }
+
+                    if(stmp[0] == 'P' && stmp[1] == 'L'){ //PLAY
+                        sin >> stmp;
+                        outCID = tileToInt(stmp);
+                        remain[outCID] -= 1;
+                    }
+
+                    if(outCID != -1)lastTile = outCID;
+                    //printf("Round #%d: %d\n", i, lastTile);
+                }
+            }
+
+            sin.clear();
+
+            sin.str(request[turnID]);
+            sin >> itmp;
+
+            if(itmp == 2) {
+
+                sout.clear();
+
+                //Here we only consider seven pairs
+
+                sin >> stmp;
+
+                addtile(stmp);
+
+                if(pairs == 7){sout << "HU";}
+
+                else{
+                    int cid = playTile();
+                    string cardName = intTotile(cid);
+
+                    sout << "PLAY " << cardName;
+
+                    tiles[cid]--;
+                }
+
+                random_shuffle(hand.begin(), hand.end());
+                sout << "PLAY " << *hand.rbegin();
+                hand.pop_back();
+
+            } else if(itmp == 3){ // itmp == 3
+                int huCID = -1, outCID = -1;
+                bool isWin = false;
+                if(pairs == 6){
+
+                    for(int i = 0; i < TOTAL_TILES; ++i){
+                        if(tiles[i] % 2 == 1){huCID = i; break;}
+                    }
+                }
+
+                sin >> stmp >> stmp;
+
+                //printf("%d %d\n", huCID, outCID);
+
+                if(stmp[0] == 'P' && stmp[1] == 'E'){ //PENG
+                    sin >> stmp;
+                    outCID = tileToInt(stmp);
+                    if(outCID == huCID)
+                        {sout << "HU"; isWin = true;}
+
+                    if(lastTile != -1)remain[lastTile] -= 2;
+                }
+
+                if(stmp[0] == 'C'){ //CHI
+                    sin >> stmp;
+
+                    int midCID = tileToInt(stmp);
+
+                    sin >> stmp;
+
+                    outCID = tileToInt(stmp);
+                    if(outCID == huCID)
+                        {sout << "HU"; isWin = true;}
+
+                    for(int k = midCID - 1; k <= midCID + 1; ++k)
+                        if(k != lastTile)remain[k] -= 1;
+
+                    //printf("CHI: midcid = %d outcid = %d\n", midCID, outCID);
+                }
+
+                if(stmp[0] == 'P' && stmp[1] == 'L'){ //PLAY
+                    sin >> stmp;
+                    outCID = tileToInt(stmp);
+                    if(outCID == huCID)
+                        {sout << "HU"; isWin = true;}
+
+                    remain[outCID] -= 1;
+                }
+
+                if(outCID != -1)lastTile = outCID;
+
+                //outRemains();
+
+                if(!isWin)sout << "PASS";
+
+
+            } else{
+                sout << "PASS";
+            }
+
+            response.push_back(sout.str());
+        }
+
+    #if SIMPLEIO
+        cout << response[turnID] << endl;
+    #else
+        Json::Value outputJSON;
+        outputJSON["response"] = response[turnID];
+        cout << outputJSON << endl;
+    #endif
 }
 
 int main()
 {
     freopen("test.txt", "r", stdin);
+
+
+
     char s[256];
     scanf("%s", s);
 
@@ -940,9 +1253,11 @@ int main()
     myDeck.randomShuffle();
     myDeck.setTiles(myHand.remains);
 
-    myHand.playTile();
+   // myHand.playTile();
 
-    testCalc(myHand);
+    calcFan(myHand, 10);
+
+    //play{
 
     return 0;
 }

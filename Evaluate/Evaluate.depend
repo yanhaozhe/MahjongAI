@@ -20,9 +20,11 @@
 	"CardDeck.h"
 	<bits/stdc++.h>
 
-1602743085 source:d:\chinesemahjongai\evaluate\main.cpp
+1602764431 source:d:\chinesemahjongai\evaluate\main.cpp
 	<bits/stdc++.h>
-	"Mahjong-GB-CPP/MahjongGB/MahjongGB.h"
+	"MahjongGB/MahjongGB.h"
+	"jsoncpp/json.h"
+	<json/json.h>
 
 1602488491 d:\chinesemahjongai\evaluate\include\carddeck.h
 	<vector>
@@ -304,4 +306,123 @@
 	<utility>
 	<vector>
 	<string>
+
+1418267538 d:\chinesemahjongai\evaluate\jsoncpp\json.h
+	<cpptl/config.h>
+	"config.h"
+	"forwards.h"
+	"forwards.h"
+	<string>
+	<vector>
+	<map>
+	<cpptl/smallmap.h>
+	<cpptl/forwards.h>
+	"features.h"
+	"value.h"
+	<deque>
+	<iosfwd>
+	<stack>
+	<string>
+	"value.h"
+	<vector>
+	<string>
+	<stdlib.h>
+	"config.h"
+	<stdexcept>
+	"../jsoncpp.cpp"
+
+1525242036 d:\chinesemahjongai\evaluate\jsoncpp.cpp
+	"jsoncpp/json.h"
+	<json/assertions.h>
+	<json/reader.h>
+	<json/value.h>
+	"json_tool.h"
+	<utility>
+	<cstdio>
+	<cassert>
+	<cstring>
+	<istream>
+	<stdlib.h>
+	<assert.h>
+	<json/assertions.h>
+	<json/value.h>
+	<json/writer.h>
+	"json_batchallocator.h"
+	<math.h>
+	<sstream>
+	<utility>
+	<cstring>
+	<cassert>
+	<cpptl/conststring.h>
+	<cstddef>
+	"json_internalarray.inl"
+	"json_internalmap.inl"
+	"json_valueiterator.inl"
+	<json/writer.h>
+	"json_tool.h"
+	<utility>
+	<assert.h>
+	<stdio.h>
+	<string.h>
+	<sstream>
+	<iomanip>
+	<math.h>
+	<float.h>
+
+1602740787 d:\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\fan_calculator.h
+	"tile.h"
+
+1602740787 d:\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\tile.h
+	<stddef.h>
+	<stdint.h>
+
+1602740787 d:\chinesemahjongai\evaluate\mahjonggb\mahjonggb.h
+	<utility>
+	<vector>
+	<string>
+
+1602740787 source:d:\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\fan_calculator.cpp
+	"fan_calculator.h"
+	<assert.h>
+	<stddef.h>
+	<string.h>
+	<algorithm>
+	<iterator>
+	"standard_tiles.h"
+	"shanten.h"
+
+1602740787 d:\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\standard_tiles.h
+	"tile.h"
+
+1602740787 d:\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\shanten.h
+	"tile.h"
+
+1602740787 source:d:\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\shanten.cpp
+	"shanten.h"
+	<assert.h>
+	<string.h>
+	<limits>
+	<algorithm>
+	<iterator>
+	"standard_tiles.h"
+
+1602740787 source:d:\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\stringify.cpp
+	"stringify.h"
+	<string.h>
+	<algorithm>
+	<iterator>
+
+1602740787 d:\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\stringify.h
+	"tile.h"
+
+1602740787 source:d:\chinesemahjongai\evaluate\mahjonggb\mahjonggb.cpp
+	"MahjongGB.h"
+	<algorithm>
+	<utility>
+	<vector>
+	<string>
+	<unordered_map>
+	"../../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/fan_calculator.h"
+	<cstring>
+	<iostream>
 

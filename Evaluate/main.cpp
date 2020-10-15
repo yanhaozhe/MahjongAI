@@ -1,5 +1,5 @@
 #include<bits/stdc++.h>
-#include "Mahjong-GB-CPP/MahjongGB/MahjongGB.h"
+#include "MahjongGB/MahjongGB.h"
 
 #define _BOTZONE_ONLINE
 #ifdef _BOTZONE_ONLINE
@@ -8,7 +8,7 @@
 #include <json/json.h>
 #endif
 
-#define SIMPLEIO 0
+#define SIMPLEIO 1
 
 using namespace std;
 
@@ -35,7 +35,7 @@ unordered_map<string, int> tileNameID;
 
 const string showTypeName[3] = {"CHI","PENG","GANG"};
 
-
+int quanFeng, menFeng;
 
 
 char tileNameTenhou[34][3];
@@ -82,6 +82,7 @@ public:
     }
 
     void setTiles(int *remainTiles){
+        deck.clear();
         for(int i = 0; i < 34; ++i){
             for(int j = 0; j < remainTiles[i]; ++j){
                 deck.push_back(i * 4 + j);
@@ -271,7 +272,7 @@ public:
             int type = it -> first, card = it -> second;
 
             if(type == 0){
-                he.flushes[card / 3][card % 9] = 2;
+                he.flushes[type][card % 9] = 2;
             }
 
             else{
@@ -706,13 +707,15 @@ public:
 
         double wuMenQiValue = calcValue("WuMenQi", cntsWin, maxRound);
 
-        printf("WuMenQi: %.4lf\n", wuMenQiValue);
+        //printf("WuMenQi: %.4lf\n", wuMenQiValue);
 
         return wuMenQiValue;
     }
 
     void evaluateNormal(vector<double> &values){
         int round = MAX_ROUND;
+
+        myDeck -> setTiles(remains);
         myDeck -> reset(1);
         const int maxRound = min(21, remainTiles);
 
@@ -772,57 +775,8 @@ public:
     }
 
     double evaluateQiDuiZi(){
-        /*int round = MAX_ROUND;
 
-        myDeck -> reset(1);
-
-        const int maxRound = min(21, remainTiles);
-
-        int cntsWin[maxRound];
-        int tmp[34];
-
-        memcpy(tmp, hidden, sizeof(hidden));
-        memset(cntsWin, 0, sizeof(cntsWin));
-
-        while(round--){
-            int curRound = 0;
-
-            while(!(myDeck -> isEmpty()) && curRound < maxRound){
-                curRound++;
-                int cid = myDeck -> drawCard();
-
-                if(cid == -1) break;
-
-                hidden[cid]++;
-
-                int worst = -1;
-
-                for(int j = 0; j < 34; ++j){
-                    if(hidden[j] % 2 == 1){
-                        if(worst == -1 || remains[j] < remains[worst])worst = j;
-                    }
-                }
-
-                hidden[worst]--;
-
-                int pairs = 0;
-
-                for(int j = 0; j < 34; ++j){
-                    pairs += hidden[j] / 2;
-                }
-
-                if(pairs >= 7){
-                    cntsWin[curRound]++;
-                    break;
-                }
-            }
-
-            myDeck -> reset(1);
-
-            memcpy(hidden, tmp, sizeof(tmp));
-        }
-
-        return calcValue(cntsWin, maxRound);*/
+        if(showCards.size() > 0)return 0.00;
 
         updateHE();
 
@@ -888,12 +842,12 @@ public:
         return value / acc;
     }
 
-    int playTile(){
+    int playTile(double &maxValue){
         double bestValue = 0.0, bestChoice = -1;
         for(int i = 0; i < 34; ++i){
             if(hidden[i] > 0){
 
-                printf("Play: %s\n", tileNameTenhou[i]);
+                //printf("Play: %s\n", tileNameTenhou[i]);
 
                 hidden[i]--;
 
@@ -901,8 +855,8 @@ public:
 
                 hidden[i]++;
 
-                printf("WeightedValue: %.4lf\n" , curValue);
-                printf("\n");
+                //printf("WeightedValue: %.4lf\n" , curValue);
+                //printf("\n");
 
                 if(curValue > bestValue){
                     bestChoice = i;
@@ -910,6 +864,8 @@ public:
                 }
             }
         }
+
+        maxValue = bestValue;
 
         return bestChoice;
     }
@@ -923,6 +879,8 @@ public:
         if(type < 3){ // canChi
             if(ord >= 2)return 0;
         }
+
+        return curValue;
     }
 
     vector<string> hand2stdHand(){
@@ -982,7 +940,7 @@ void init(){
     }
 }
 
-int calcFan(Hands &myHand, int winCid){
+int calcFan(Hands &myHand, int winCid, bool isSelfDraw){
 
 
     /* format:
@@ -1003,12 +961,11 @@ int calcFan(Hands &myHand, int winCid){
     vector<string> hand = myHand.hand2stdHand();
     string winTile = tileName[winCid];
     int flowerCount = 0;
-    bool isZIMO = false;
+    bool isZIMO = isSelfDraw;
     bool isJUEZHANG = false;
     bool isGANG = false;
     bool isLAST = false;
-    int menFeng = 0;
-    int quanFeng = 1;
+
     int countFan = 0;
 
     try{
@@ -1017,14 +974,14 @@ int calcFan(Hands &myHand, int winCid){
 
         for(auto i : re){
             countFan += i.first;
-            cout << i.first << " " << i.second << endl;
+           // cout << i.first << " " << i.second << endl;
         }
 
-        printf("Total: %d Fans.\n", countFan);
+        //printf("Total: %d Fans.\n", countFan);
     }
 
     catch(const string &error){
-        cout << error << endl;
+        //cout << error << endl;
         countFan = -1;
     }
 
@@ -1063,8 +1020,12 @@ void myGamePlay(Hands &myHand){
 
         if(turnID < 2) {
             response.push_back("PASS");
-        } else {
+        }
 
+        else {
+
+
+            //First 2 rounds
             int itmp, myPlayerID, quan;
 
             int lastTile = -1;
@@ -1073,6 +1034,9 @@ void myGamePlay(Hands &myHand){
             istringstream sin;
             sin.str(request[0]);
             sin >> itmp >> myPlayerID >> quan;
+
+            quanFeng = quan;
+            menFeng = myPlayerID;
 
             sin.clear();
             sin.str(request[1]);
@@ -1083,147 +1047,288 @@ void myGamePlay(Hands &myHand){
                 myHand.addTile(tileNameID[stmp]);
             }
 
-            for(int i = 2; i < turnID; i++) { // Exe
+
+            // Previous Rounds
+            for(int i = 2; i < turnID; i++) {
                 sin.clear();
                 sin.str(request[i]);
                 sin >> itmp;
 
                 if(itmp == 2) { // Draw Card
                     sin >> stmp;
-
                     myHand.addTile(tileNameID[stmp]);
-
                     sin.clear();
+
                     sin.str(response[i]);
                     sin >> stmp >> stmp;
-                    hand.erase(find(hand.begin(), hand.end(), stmp));
 
-                    removetile(stmp);
+                    myHand.discardTile(tileNameID[stmp], true);
+                    lastTile = tileNameID[stmp];
                 }
 
-                else if(itmp == 3){ // itmp == 3
+                else if(itmp == 3){ //Other's player
                     stmp.clear();
                     sin >> stmp >> stmp;
                     int outCID = -1;
-                    if(stmp[0] == 'P' && stmp[1] == 'E'){ //PENG
-                        sin >> stmp;
-                        outCID = tileToInt(stmp);
-                        if(lastTile != -1)remain[lastTile] -= 2;
+
+                    if(stmp == "DRAW"){ // DRAW
+                        lastTile = -1;
+                        //Do nothing
                     }
 
-                    if(stmp[0] == 'C'){ //CHI
+                    else if(stmp == "PENG"){ //PENG
                         sin >> stmp;
-                        int midCID = tileToInt(stmp);
+                        outCID = tileNameID[stmp];
+                        if(lastTile != -1){
+                            myHand.deductRemain(lastTile);
+                            myHand.deductRemain(lastTile);
+                        }
+
+                        lastTile = outCID;
+                    }
+
+                    else if(stmp == "CHI"){ //CHI
                         sin >> stmp;
-                        outCID = tileToInt(stmp);
+
+                        int midCID = tileNameID[stmp];
+
+                        sin >> stmp;
+
+                        outCID = tileNameID[stmp];
 
                         for(int k = midCID - 1; k <= midCID + 1; ++k)
-                            if(k != lastTile)remain[k] -= 1;
+                            if(k != lastTile)myHand.deductRemain(k);
+
+                        lastTile = outCID;
                     }
 
-                    if(stmp[0] == 'P' && stmp[1] == 'L'){ //PLAY
+                    else if(stmp == "PLAY"){ //PLAY
                         sin >> stmp;
-                        outCID = tileToInt(stmp);
-                        remain[outCID] -= 1;
-                    }
+                        outCID = tileNameID[stmp];
+                        myHand.discardTile(outCID, false);
 
-                    if(outCID != -1)lastTile = outCID;
+                        lastTile = outCID;
+                    }
                     //printf("Round #%d: %d\n", i, lastTile);
                 }
+        }
+
+        sin.clear();
+
+        //Current Round
+
+        sin.str(request[turnID]);
+        sin >> itmp;
+
+        if(itmp == 2) {  // Self Draw
+
+            sout.clear();
+
+            sin >> stmp;
+
+            int curFan = calcFan(myHand, tileNameID[stmp], true);
+
+            if(curFan >= 8)sout << "HU";
+
+            else{
+
+                myHand.addTile(tileNameID[stmp]);
+
+                double bestValue;
+                int cid = myHand.playTile(bestValue);
+
+                sout << "PLAY " << tileName[cid];
+
+                myHand.discardTile(cid, true);
+
+                lastTile = cid;
+            }
+        }
+
+        else if(itmp == 3){ //Other player discard a tile
+
+            int outCID = -1;
+            string outPlayerStr;
+            int outPlayerID;
+
+            sin >> outPlayerStr >> stmp;
+
+            outPlayerID = outPlayerStr[0] - '0';
+
+            //printf("%d %d\n", huCID, outCID);
+
+            if(stmp == "PENG"){ //PENG
+                sin >> stmp;
+
+                outCID = tileNameID[stmp];
+
+                if(lastTile != -1){
+                    myHand.deductRemain(lastTile);
+                    myHand.deductRemain(lastTile);
+                }
+
+                myHand.deductRemain(outCID);
             }
 
-            sin.clear();
+            else if(stmp == "CHI"){ //CHI
+                sin >> stmp;
 
-            sin.str(request[turnID]);
-            sin >> itmp;
-
-            if(itmp == 2) {
-
-                sout.clear();
-
-                //Here we only consider seven pairs
+                int midCID = tileNameID[stmp];
 
                 sin >> stmp;
 
-                addtile(stmp);
+                outCID = tileNameID[stmp];
 
-                if(pairs == 7){sout << "HU";}
+                for(int k = midCID - 1; k <= midCID + 1; ++k)
+                    if(k != lastTile)myHand.deductRemain(k);
 
-                else{
-                    int cid = playTile();
-                    string cardName = intTotile(cid);
-
-                    sout << "PLAY " << cardName;
-
-                    tiles[cid]--;
-                }
-
-                random_shuffle(hand.begin(), hand.end());
-                sout << "PLAY " << *hand.rbegin();
-                hand.pop_back();
-
-            } else if(itmp == 3){ // itmp == 3
-                int huCID = -1, outCID = -1;
-                bool isWin = false;
-                if(pairs == 6){
-
-                    for(int i = 0; i < TOTAL_TILES; ++i){
-                        if(tiles[i] % 2 == 1){huCID = i; break;}
-                    }
-                }
-
-                sin >> stmp >> stmp;
-
-                //printf("%d %d\n", huCID, outCID);
-
-                if(stmp[0] == 'P' && stmp[1] == 'E'){ //PENG
-                    sin >> stmp;
-                    outCID = tileToInt(stmp);
-                    if(outCID == huCID)
-                        {sout << "HU"; isWin = true;}
-
-                    if(lastTile != -1)remain[lastTile] -= 2;
-                }
-
-                if(stmp[0] == 'C'){ //CHI
-                    sin >> stmp;
-
-                    int midCID = tileToInt(stmp);
-
-                    sin >> stmp;
-
-                    outCID = tileToInt(stmp);
-                    if(outCID == huCID)
-                        {sout << "HU"; isWin = true;}
-
-                    for(int k = midCID - 1; k <= midCID + 1; ++k)
-                        if(k != lastTile)remain[k] -= 1;
-
-                    //printf("CHI: midcid = %d outcid = %d\n", midCID, outCID);
-                }
-
-                if(stmp[0] == 'P' && stmp[1] == 'L'){ //PLAY
-                    sin >> stmp;
-                    outCID = tileToInt(stmp);
-                    if(outCID == huCID)
-                        {sout << "HU"; isWin = true;}
-
-                    remain[outCID] -= 1;
-                }
-
-                if(outCID != -1)lastTile = outCID;
-
-                //outRemains();
-
-                if(!isWin)sout << "PASS";
-
-
-            } else{
-                sout << "PASS";
+                myHand.deductRemain(outCID);
             }
 
-            response.push_back(sout.str());
+            else if(stmp == "PLAY"){ //PLAY
+
+                sin >> stmp;
+                outCID = tileNameID[stmp];
+
+                myHand.deductRemain(outCID);
+            }
+
+            if(outCID != -1){
+                lastTile = outCID;
+
+                //int curFan = calcFan(myHand, outCID, false);
+
+                int curFan = 7;
+                if(curFan >= 8)sout << "HU";
+                else {
+
+                    int &x = outCID;
+
+                    int outType = tileType[x], outOrd = tileOrd[x];
+
+
+                    double curValue = myHand.getWeightValue();
+
+
+                    double bestValue = curValue;
+                    int bestChoice = -1, arg1, arg2;
+
+                    Hands tmpHand = myHand;
+
+                    double tmpValue, playCID;
+
+                    if(outType < 3 && (outPlayerID - menFeng + 4) % 4 == 3){
+                        //Can chow
+
+
+
+                        // Chow x - 2, x - 1, x
+
+
+
+                        if(outOrd >= 2 && tmpHand.hidden[x - 2] && tmpHand.hidden[x - 1]){
+                            tmpHand.showCards.push_back({0, x - 2});
+                            tmpHand.hidden[x - 2]--;
+                            tmpHand.hidden[x - 1]--;
+
+                            playCID = tmpHand.playTile(tmpValue);
+
+                            tmpHand.showCards.pop_back();
+                            tmpHand.showCards.shrink_to_fit();
+                            tmpHand.hidden[x - 2]++;
+                            tmpHand.hidden[x - 1]++;
+
+                            if(tmpValue > bestValue){
+                                bestValue = tmpValue;
+                                bestChoice = 0;
+                                arg1 = x - 1;
+                                arg2 = playCID;
+                            }
+                        }
+
+                        if(outOrd >= 1 && outOrd < 8 && tmpHand.hidden[x - 1] && tmpHand.hidden[x + 1]){
+                            tmpHand.showCards.push_back({0, x - 1});
+                            tmpHand.hidden[x - 1]--;
+                            tmpHand.hidden[x + 1]--;
+
+                            int playCID = tmpHand.playTile(tmpValue);
+
+                            tmpHand.showCards.pop_back();
+                            tmpHand.showCards.shrink_to_fit();
+                            tmpHand.hidden[x - 1]++;
+                            tmpHand.hidden[x + 1]++;
+
+                            if(tmpValue > bestValue){
+                                bestValue = tmpValue;
+                                bestChoice = 0;
+                                arg1 = x;
+                                arg2 = playCID;
+                            }
+                        }
+
+                        if(outOrd < 7 && tmpHand.hidden[x + 1] && tmpHand.hidden[x + 2]){
+                            tmpHand.showCards.push_back({0, x});
+                            tmpHand.hidden[x + 2]--;
+                            tmpHand.hidden[x + 1]--;
+
+                            int playCID = tmpHand.playTile(tmpValue);
+
+                            tmpHand.showCards.pop_back();
+                            tmpHand.showCards.shrink_to_fit();
+                            tmpHand.hidden[x + 2]++;
+                            tmpHand.hidden[x + 1]++;
+
+                            if(tmpValue > bestValue){
+                                bestValue = tmpValue;
+                                bestChoice = 0;
+                                arg1 = x + 1;
+                                arg2 = playCID;
+                            }
+                        }
+                    }
+
+                    if(tmpHand.hidden[x] >= 2){
+                        //Can Pung
+
+                        tmpHand.hidden[x] -= 2;
+                        tmpHand.showCards.push_back({1, x});
+
+                        int playCID = tmpHand.playTile(tmpValue);
+
+                        tmpHand.showCards.pop_back();
+                        tmpHand.showCards.shrink_to_fit();
+                        tmpHand.hidden[x] += 2;
+
+                        if(tmpValue > bestValue){
+                            bestValue = tmpValue;
+                            bestChoice = 1;
+                            arg1 = x;
+                            arg2 = playCID;
+                        }
+                    }
+
+
+                    if(bestChoice != -1 && bestValue > 1.25 && bestValue / curValue >= 1.5){
+                        if(bestChoice == 0) sout << "CHI" << " " << tileName[arg1] << " " << tileName[arg2];
+                        else if(bestChoice == 1) sout << "PENG" << " " << tileName[arg2];
+                    }
+
+                    else{
+                        sout << "PASS";
+                    }
+                }
+            }
+
+            else sout << "PASS";
+
         }
+
+        else{
+            sout << "PASS";
+        }
+
+        response.push_back(sout.str());
+    }
 
     #if SIMPLEIO
         cout << response[turnID] << endl;
@@ -1236,28 +1341,20 @@ void myGamePlay(Hands &myHand){
 
 int main()
 {
-    freopen("test.txt", "r", stdin);
-
-
-
-    char s[256];
-    scanf("%s", s);
+   // freopen("test.txt", "r", stdin);
 
     init();
 
-    Hands myHand(s);
+    Hands myHand;
     CardDeck myDeck;
 
     myHand.setDeck(myDeck);
-
     myDeck.randomShuffle();
+
     myDeck.setTiles(myHand.remains);
 
-   // myHand.playTile();
 
-    calcFan(myHand, 10);
-
-    //play{
+    myGamePlay(myHand);
 
     return 0;
 }

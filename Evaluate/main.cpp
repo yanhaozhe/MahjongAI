@@ -200,7 +200,7 @@ public:
     int shown[34], hidden[34];
     int tmp[34];
 
-    static const int MAX_ROUND = 768;
+    static const int MAX_ROUND = 1600;
 
     HandElements he;
     allTripleFlushesFan tf;
@@ -270,6 +270,7 @@ public:
             hidden[i] = tiles[i];
         }
     }
+
 
     void updateHE(){
         memset(he.pairs, 0, sizeof(he.pairs));
@@ -429,6 +430,11 @@ public:
 
 
         return res;
+    }
+
+
+    void evaluateSpecificLimitedFans(const string &fanName, int *limitTiles){
+
     }
 
     double evaluateQuanBuKao(){

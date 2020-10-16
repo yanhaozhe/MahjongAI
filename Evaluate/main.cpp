@@ -186,13 +186,21 @@ struct allTripleFlushesFan{
     }
 };
 
+enum limitFans{
+    hunYiSe, tuiBuDao, daYuWu, xiaoYuWu, lvYiSe, hunLaoTou
+};
+
+struct allLimitedFans{
+    static const vector<int> stc;
+};
+
 class Hands{
 public:
     int tiles[34], remains[34];
     int shown[34], hidden[34];
     int tmp[34];
 
-    static const int MAX_ROUND = 500;
+    static const int MAX_ROUND = 768;
 
     HandElements he;
     allTripleFlushesFan tf;
@@ -434,6 +442,8 @@ public:
 
         memcpy(tmp, hidden, sizeof(hidden));
         memset(cntsWin, 0, sizeof(cntsWin));
+
+        if(countQuanBuKaoTiles() < 9)return 0.0;
 
 
 
@@ -855,8 +865,8 @@ public:
 
                 hidden[i]++;
 
-               // printf("WeightedValue: %.4lf\n" , curValue);
-              //  printf("\n");
+                //printf("WeightedValue: %.4lf\n" , curValue);
+                //printf("\n");
 
                 if(curValue > bestValue){
                     bestChoice = i;
@@ -902,9 +912,10 @@ public:
         int m = showCards.size();
 
         for(int i = 0; i < m; ++i){
-            string showType = showTypeName[showCards[i].first];
+            int showTypeID = showCards[i].first;
+            string showType = showTypeName[showTypeID];
             int cid = showCards[i].second;
-            string showCardNames = tileName[cid];
+            string showCardNames = showTypeID == 0 ? tileName[cid + 1] : tileName[cid];
             int cardFromID = 1;
 
 
@@ -915,7 +926,7 @@ public:
     }
 
     void debugOutput(){
-        for(int i = 0; i < showCards.size(); ++i){
+        for(unsigned int i = 0; i < showCards.size(); ++i){
             printf("%d %d\n", showCards[i].first, showCards[i].second);
         }
 
@@ -1066,9 +1077,14 @@ void myGamePlay(Hands &myHand){
                 sin >> itmp;
 
                 if(itmp == 2) { // Draw Card
+
+
+                    myHand.remainTiles--;
                     sin >> stmp;
                     myHand.addTile(tileNameID[stmp]);
                     sin.clear();
+
+
 
                     sin.str(response[i]);
                     sin >> stmp >> stmp;
@@ -1241,7 +1257,7 @@ void myGamePlay(Hands &myHand){
 
 
                     double bestValue = curValue;
-                    int bestChoice = -1, arg1, arg2;
+                    int bestChoice = -1, arg1 = 0, arg2 = 0;
 
                     Hands tmpHand = myHand;
 
@@ -1288,7 +1304,7 @@ void myGamePlay(Hands &myHand){
 
                             int playCID = tmpHand.playTile(tmpValue);
 
-                            if(tmpValue > bestValue){
+                            if(tmpValue > bestValue && playCID != x){
                                 bestTmpHand = tmpHand;
                                 bestValue = tmpValue;
                                 bestChoice = 0;
@@ -1311,7 +1327,7 @@ void myGamePlay(Hands &myHand){
 
                             int playCID = tmpHand.playTile(tmpValue);
 
-                            if(tmpValue > bestValue){
+                            if(tmpValue > bestValue && playCID != x){
                                 bestTmpHand = tmpHand;
                                 bestValue = tmpValue;
                                 bestChoice = 0;
@@ -1328,7 +1344,7 @@ void myGamePlay(Hands &myHand){
                         }
                     }
 
-                    if(tmpHand.hidden[x] >= 2){
+                    if(outPlayerID != menFeng && tmpHand.hidden[x] >= 2){
                         //Can Pung
 
                         tmpHand.hidden[x] -= 2;
@@ -1336,7 +1352,7 @@ void myGamePlay(Hands &myHand){
 
                         int playCID = tmpHand.playTile(tmpValue);
 
-                        if(tmpValue > bestValue){
+                        if(tmpValue > bestValue && playCID != x){
                             bestTmpHand = tmpHand;
                             bestValue = tmpValue;
                             bestChoice = 1;
@@ -1388,7 +1404,7 @@ void myGamePlay(Hands &myHand){
 
 int main()
 {
-    freopen("test.txt", "r", stdin);
+    //freopen("test.txt", "r", stdin);
 
     init();
 

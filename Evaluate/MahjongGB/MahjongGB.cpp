@@ -97,4 +97,3 @@ void MahjongInit()
         str2tile["J" + to_string((i))] = mahjong::make_tile(TILE_SUIT_HONORS, i + 4);
     }
 }
-

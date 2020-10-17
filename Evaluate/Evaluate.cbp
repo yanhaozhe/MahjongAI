@@ -34,16 +34,16 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/fan_calculator.cpp" />
-		<Unit filename="ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/fan_calculator.h" />
-		<Unit filename="ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/shanten.cpp" />
-		<Unit filename="ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/shanten.h" />
-		<Unit filename="ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/standard_tiles.h" />
-		<Unit filename="ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/stringify.cpp" />
-		<Unit filename="ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/stringify.h" />
-		<Unit filename="ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/tile.h" />
-		<Unit filename="Mahjong-GB-CPP/MahjongGB/MahjongGB.cpp" />
-		<Unit filename="Mahjong-GB-CPP/MahjongGB/MahjongGB.h" />
+		<Unit filename="../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/fan_calculator.cpp" />
+		<Unit filename="../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/fan_calculator.h" />
+		<Unit filename="../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/shanten.cpp" />
+		<Unit filename="../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/shanten.h" />
+		<Unit filename="../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/standard_tiles.h" />
+		<Unit filename="../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/stringify.cpp" />
+		<Unit filename="../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/stringify.h" />
+		<Unit filename="../ChineseOfficialMahjongHelper/Classes/mahjong-algorithm/tile.h" />
+		<Unit filename="MahjongGB/MahjongGB.cpp" />
+		<Unit filename="MahjongGB/MahjongGB.h" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />

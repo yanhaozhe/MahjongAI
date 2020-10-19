@@ -200,11 +200,7 @@ public:
     int shown[34], hidden[34];
     int tmp[34];
 
-<<<<<<< HEAD
     static const int MAX_ROUND = 960;
-=======
-    static const int MAX_ROUND = 1600;
->>>>>>> 8f2b61374b8ce9fae9f931802f021ca0d75c1207
 
     HandElements he;
     allTripleFlushesFan tf;

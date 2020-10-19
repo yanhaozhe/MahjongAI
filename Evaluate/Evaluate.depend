@@ -22,7 +22,7 @@
 	"CardDeck.h"
 	<bits/stdc++.h>
 
-1602768494 source:d:\chinesemahjongai\evaluate\main.cpp
+1603104912 source:d:\chinesemahjongai\evaluate\main.cpp
 	<bits/stdc++.h>
 	"MahjongGB/MahjongGB.h"
 	"jsoncpp/json.h"
@@ -414,7 +414,7 @@
 1602740787 d:\chinesemahjongai\chineseofficialmahjonghelper\classes\mahjong-algorithm\stringify.h
 	"tile.h"
 
-1602740787 source:d:\chinesemahjongai\evaluate\mahjonggb\mahjonggb.cpp
+1602909452 source:d:\chinesemahjongai\evaluate\mahjonggb\mahjonggb.cpp
 	"MahjongGB.h"
 	<algorithm>
 	<utility>

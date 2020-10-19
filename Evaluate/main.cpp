@@ -16,7 +16,7 @@ vector<string> request, response;
 
 
 
-const char* tripleFlushFansName[] = {"SanSeSanTongShun", "SanSeSanBuGao", "QingLong", "HuaLong"};
+const char* tripleFlushFansName[] = {"SanSeSanTongShun", "SanSeSanBuGao", "QingLong", "HuaLong", "YiSeSanBuGao", "YiSeSanTongShun"};
 int tilesRange[5][34];
 const double baseValueQiDuiZi[8] = {0.01,0.02,0.04,0.2,1.25,25,500,10000.0};
 //0.75 0.2 0.04 0.01
@@ -126,6 +126,9 @@ struct tripleFlushes{
 struct HandElements{
     int pairs[34], triples[34];
     int flushes[3][7];
+
+    int totalM, totalS, totalP, totalF, totalJ;
+    int singleM, singleS, singleP, singleF, singleJ;
 };
 
 struct allTripleFlushesFan{
@@ -134,6 +137,8 @@ struct allTripleFlushesFan{
     vector<tripleFlushes> sanSeSanBuGao;
     vector<tripleFlushes> qingLong;
     vector<tripleFlushes> huaLong;
+    vector<tripleFlushes> yiSeSanBuGao;
+    vector<tripleFlushes> yiSeSanTongShun;
 
     tripleFlushes tmpTripleFlushes;
 
@@ -143,6 +148,8 @@ struct allTripleFlushesFan{
         addSanSeSanBuGao();
         addQingLong();
         addHuaLong();
+        addYiSeSanBuGao();
+        addYiSeSanTongShun();
     }
 
     void add(vector<tripleFlushes> &arr, int cid1, int cid2, int cid3){
@@ -184,15 +191,37 @@ struct allTripleFlushesFan{
         add(huaLong, i + 18, j, k + 9);
         add(huaLong, i + 18, j + 9, k);
     }
+
+    void addYiSeSanBuGao(){
+        for(int type = 0; type < 3; type++){
+            for(int start = 0; start < 7; start++){
+                int base = start + type * 9;
+                add(sanSeSanBuGao, base, base + 1, base + 2);
+                if(start < 5)add(sanSeSanBuGao, base, base + 2, base + 4);
+            }
+        }
+    }
+
+    void addYiSeSanTongShun(){
+        for(int type = 0; type < 3; type++){
+            for(int start = 0; start < 7; start++){
+                int base = start + type * 9;
+                add(sanSeSanBuGao, base, base, base);
+            }
+        }
+    }
 };
 
 enum limitFans{
-    hunYiSe, tuiBuDao, daYuWu, xiaoYuWu, lvYiSe, hunLaoTou
+    hunYiSe, tuiBuDao, daYuWu, xiaoYuWu, lvYiSe
 };
 
-struct allLimitedFans{
-    static const vector<int> stc;
+struct limitFan{
+    int limitedTiles[34];
+    int fanS;
 };
+
+vector<limitFan> allLimitFans;
 
 class Hands{
 public:
@@ -200,11 +229,7 @@ public:
     int shown[34], hidden[34];
     int tmp[34];
 
-<<<<<<< HEAD
-    static const int MAX_ROUND = 960;
-=======
-    static const int MAX_ROUND = 1600;
->>>>>>> 8f2b61374b8ce9fae9f931802f021ca0d75c1207
+    static const int MAX_ROUND = 640;
 
     HandElements he;
     allTripleFlushesFan tf;
@@ -280,6 +305,9 @@ public:
         memset(he.pairs, 0, sizeof(he.pairs));
         memset(he.triples, 0, sizeof(he.triples));
         memset(he.flushes, 0, sizeof(he.flushes));
+
+        he.singleF = he.singleJ = 0;
+
 
         for(auto it = showCards.begin(); it != showCards.end(); ++it){
             int type = it -> first, card = it -> second;
@@ -414,6 +442,12 @@ public:
         return hidden[cid] >= 3;
     }
 
+    double evaluatePengPengHu(){
+        updateHE();
+
+        return 0.0;
+    }
+
     double calcValue(const char* fanName, int *cntsWin, int maxRound){
 
         int acc = 0;
@@ -501,6 +535,8 @@ public:
         if(cid1 > cid3)swap(cid1, cid3);
         if(cid2 > cid3)swap(cid2, cid3);
 
+        int tmp[34];
+
         memcpy(tmp, hidden, sizeof(tmp));
 
         bool ok1, ok2, ok3;
@@ -518,6 +554,8 @@ public:
                 if(!ok3 && it -> second == cid3){ok3 = true; usedOrgTiles += 3; res++;}
             }
         }
+
+
 
         if(!ok1){
             if(hasHiddenChow(cid1)){
@@ -632,8 +670,6 @@ public:
         return u + v;
     }
 
-
-
     int evaluateWuMenQiSuits(bool *hasPair, bool *hasSuit, int cid){
         int best = 0;
 
@@ -679,59 +715,6 @@ public:
         }
     }
 
-    double evaluateWuMenQi(){
-        int round = MAX_ROUND;
-
-        myDeck -> reset(1);
-
-        const int maxRound = min(21, remainTiles);
-
-        int cntsWin[maxRound];
-        int tmp[34];
-
-        memcpy(tmp, hidden, sizeof(hidden));
-        memset(cntsWin, 0, sizeof(cntsWin));
-
-
-        bool hasPair[5], hasSuit[5];
-
-        while(round--){
-            int curRound = 0;
-
-            evaluateWuMenQiInit(hasPair, hasSuit);
-
-            while(!(myDeck -> isEmpty()) && curRound < maxRound){
-                curRound++;
-                int cid = myDeck -> drawCard();
-
-               // cid = 27;
-
-                if(cid == -1) break;
-
-                hidden[cid]++;
-
-                addToHE(cid);
-
-                int curSuits = evaluateWuMenQiSuits(hasPair, hasSuit, cid);
-
-                if(curSuits == 5){
-                    cntsWin[curRound]++;
-                    break;
-                }
-            }
-
-            myDeck -> reset(1);
-
-            memcpy(hidden, tmp, sizeof(tmp));
-        }
-
-        double wuMenQiValue = calcValue("WuMenQi", cntsWin, maxRound);
-
-        //printf("WuMenQi: %.4lf\n", wuMenQiValue);
-
-        return wuMenQiValue;
-    }
-
     void evaluateNormal(vector<double> &values){
         int round = MAX_ROUND;
 
@@ -739,10 +722,15 @@ public:
         myDeck -> reset(1);
         const int maxRound = min(21, remainTiles);
 
-        int cntsWin[4][maxRound];
-        bool isWin[4];
+        const int totalNormalFans = 5;
+
+        int cntsWin[totalNormalFans][maxRound + 1];
+        bool isWin[totalNormalFans];
 
         int tmp[34], tmp2[34];
+
+        bool hasSuit[5], hasPair[5];
+
 
 
         memset(cntsWin, 0, sizeof(cntsWin));
@@ -753,6 +741,8 @@ public:
             int curRound = 0;
 
             memset(isWin, 0, sizeof(isWin));
+
+            evaluateWuMenQiInit(hasPair, hasSuit);
 
             while(!(myDeck -> isEmpty()) && curRound < maxRound){
 
@@ -772,8 +762,15 @@ public:
                     memcpy(hidden, tmp2, sizeof(tmp2));
                 }
 
-                curRound++;
+                if(!isWin[4]){
+                    int wuMenQiSuits = evaluateWuMenQiSuits(hasPair, hasSuit, cid);
 
+                    if(wuMenQiSuits == 5){
+                        isWin[4] = true; cntsWin[4][curRound]++;
+                    }
+                }
+
+                curRound++;
             }
 
             myDeck -> reset(1);
@@ -781,7 +778,7 @@ public:
             memcpy(hidden, tmp, sizeof(tmp));
         }
 
-        for(int i = 0; i < 4; ++i){
+        for(int i = 0; i < 5; ++i){
             double curValue = calcValue(tripleFlushFansName[i], cntsWin[i], maxRound);
             values.push_back(curValue);
 
@@ -841,7 +838,7 @@ public:
 
         values.push_back(evaluateQiDuiZi());
         values.push_back(evaluateQuanBuKao());
-        values.push_back(evaluateWuMenQi());
+        //values.push_back(evaluateWuMenQi());
 
         //values.push_back(evaluateSanSeSanTongShun());
 
@@ -867,7 +864,7 @@ public:
         for(int i = 0; i < 34; ++i){
             if(hidden[i] > 0){
 
-                //printf("Play: %s\n", tileNameTenhou[i]);
+
 
                 hidden[i]--;
 
@@ -875,8 +872,11 @@ public:
 
                 hidden[i]++;
 
-                //printf("WeightedValue: %.4lf\n" , curValue);
-                //printf("\n");
+                /*
+                printf("Play: %s\n", tileNameTenhou[i]);
+                printf("WeightedValue: %.4lf\n" , curValue);
+                printf("\n");
+                */
 
                 if(curValue > bestValue){
                     bestChoice = i;
@@ -943,6 +943,26 @@ public:
         for(int i = 0; i < 34; ++i){
             for(int j = 0; j < hidden[i]; ++j){
                 cout << tileName[i];
+            }
+        }
+    }
+
+    void outputTenhouFormat(){
+        int cnt = 0;
+        for(int i = 0; i < 34; ++i){
+            for(int j = 0; j < hidden[i]; ++j){
+                printf("%d", i % 9 + 1);
+                cnt++;
+            }
+
+            if(cnt > 0 && (i % 9 == 8 || i == 33)){
+                if(cnt > 0){
+                    if(i == 8)printf("m");
+                    if(i == 17)printf("s");
+                    if(i == 26)printf("p");
+                    if(i == 33)printf("z");
+                    cnt = 0;
+                }
             }
         }
     }
@@ -1019,6 +1039,8 @@ int calcFan(Hands &myHand, int winCid, bool isSelfDraw){
 
     return countFan;
 }
+
+
 
 void myGamePlay(Hands &myHand){
     int turnID;
@@ -1182,16 +1204,32 @@ void myGamePlay(Hands &myHand){
 
             sin >> stmp;
 
-            int curFan = calcFan(myHand, tileNameID[stmp], true);
+            myHand.updateHE();
 
+            //int curFan = calcFan(myHand, tileNameID[stmp], true);
+
+            int curFan = 7;
             if(curFan >= 8)sout << "HU";
+
 
             else{
 
                 myHand.addTile(tileNameID[stmp]);
 
                 double bestValue;
+
+                myHand.updateHE();
+                //myHand.outputTenhouFormat();
                 int cid = myHand.playTile(bestValue);
+
+                if(bestValue <= 0.1500) {
+                    for(int i = 27; i < 34; ++i){
+                        if(myHand.hidden[i] == 1){
+                            cid = i;
+                            break;
+                        }
+                    }
+                }
 
                 sout << "PLAY " << tileName[cid];
 
@@ -1414,7 +1452,7 @@ void myGamePlay(Hands &myHand){
 
 int main()
 {
-    //freopen("test.txt", "r", stdin);
+    freopen("test.txt", "r", stdin);
 
     init();
 

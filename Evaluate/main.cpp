@@ -8,7 +8,7 @@
 #include <json/json.h>
 #endif
 
-#define LOCAL8
+#define LOCAL
 
 #define SIMPLEIO 1
 
@@ -137,6 +137,19 @@ struct tripleFlushes{
         this -> cid2 = cid2;
         this -> cid3 = cid3;
     }
+
+    void sort(){
+        if(cid1 > cid2)swap(cid1, cid2);
+        if(cid1 > cid3)swap(cid1, cid3);
+        if(cid2 > cid3)swap(cid2, cid3);
+    }
+
+    void toArray(int *used){
+        for(int i = 0; i < 34; ++i)used = 0;
+        used[cid1]++; used[cid1 + 1]++; used[cid1 + 2]++;
+        used[cid2]++; used[cid2 + 1]++; used[cid2 + 2]++;
+        used[cid3]++; used[cid3 + 1]++; used[cid3 + 2]++;
+    }
 };
 
 struct HandElements{
@@ -170,6 +183,7 @@ struct allTripleFlushesFan{
 
     void add(vector<tripleFlushes> &arr, int cid1, int cid2, int cid3){
         tmpTripleFlushes.setTripleFlushes(cid1, cid2, cid3);
+        tmpTripleFlushes.sort();
         arr.push_back(tmpTripleFlushes);
     }
 
@@ -237,7 +251,19 @@ struct limitFan{
     int fanS;
 
     void addHunYiSe(){
-        //998244353
+
+    }
+};
+
+struct tripleFanElement{
+    tripleFlushes* p;
+    int orgCounter;
+    int other[34];
+
+    tripleFanElement(){
+        p = NULL;
+        orgCounter = 0;
+        memset(other, 0, sizeof(other));
     }
 };
 
@@ -250,12 +276,15 @@ public:
     int tmp[34];
 
     static const int MAX_ROUND = 720;
-    static const int tripleFlushesFansNum = 7;
+    static const int tripleFlushesFansNum = 6;
 
     HandElements he;
     allTripleFlushesFan tf;
 
+    tripleFanElement tfe[6];
+
     vector<tripleFlushes> *tfPointers[tripleFlushesFansNum];
+    vector<int> tfCounts[tripleFlushesFansNum];
 
 
     typedef double (Hands::*evaluateFunction)();
@@ -268,8 +297,6 @@ public:
         memset(tiles, 0, sizeof(tiles));
 
         myDeck = NULL;
-
-
 
         remainTiles = 21;
 
@@ -323,6 +350,54 @@ public:
         }
     }
 
+    int getSingleMatchTiles(const tripleFlushes &fan, vector<int> &res, int *otherTiles){
+        bool ok1, ok2, ok3;
+        ok1 = ok2 = ok3 = false;
+
+        memcpy(otherTiles, hidden, sizeof(hidden));
+
+        int matches = 0, m = showCards.size();
+
+        for(int i = 0; i < m; ++i){
+            if(showCards[i].first == 0)
+                {
+                    if(!ok1 && showCards[i].second == fan.cid1) { matches += (7 << 6); ok1 = true; }
+                    if(!ok2 && showCards[i].second == fan.cid2) { matches += (7 << 3); ok2 = true; }
+                    if(!ok3 && showCards[i].second == fan.cid3) { matches += (7 << 0); ok3 = true; }
+                }
+        }
+
+        if(!ok1){
+            int temRes1 = checkAndExcludeSingleFlush(otherTiles, fan.cid1);
+            matches += (temRes << 6);
+        }
+
+        if(!ok2){
+            int temRes2 = checkAndExcludeSingleFlush(otherTiles, fan.cid2);
+            matches += (temRes << 3);
+        }
+
+        if(!ok1){
+            int temRes3 = checkAndExcludeSingleFlush(otherTiles, fan.cid3);
+            matches += temRes;
+        }
+
+        return matches;
+    }
+
+    int getMatchTiles(vector<tripleFlushes> &fans, vector<int> &res){
+        int v = 0;
+        int m = fans.size();
+
+        for(int i = 0; i < m; ++i){
+            tripleFlushes &j = fans[i];
+
+
+
+        }
+
+        return 0;
+    }
 
     void updateHE(){
         memset(he.pairs, 0, sizeof(he.pairs));
@@ -470,6 +545,7 @@ public:
 
         int m = showCards.size();
 
+
         int triples, pairs, deadPairs;
         triples = pairs = deadPairs = 0;
 
@@ -481,6 +557,8 @@ public:
             if(showCards[i].first == 0)return 0.0;
             else triples++;
         }
+
+
 
         for(int i = 0; i < 34; ++i){
             if(hidden[i] >= 3)triples++;
@@ -495,7 +573,7 @@ public:
             }
         }
 
-        int totalSuits = triples + pairs - deadPairs;
+        int ps = pairsOrd.size(), ss = singlesOrd.size();
 
         int idx;
         if(triples == 4){// isReady
@@ -523,7 +601,7 @@ public:
 
                 v += remains[pairsOrd[0]] * 4;
 
-                for(int i = 0; i < singlesOrd.size(); ++i){
+                for(int i = 0; i < ss; ++i){
                     int j = singlesOrd[i];
                     v += remains[j];
                 }
@@ -537,7 +615,7 @@ public:
 
 
                 int v = 0;
-                for(int i = 0; i < singlesOrd.size(); ++i){
+                for(int i = 0; i < ss; ++i){
                     int j = singlesOrd[i];
                     v += remains[j];
                 }
@@ -554,12 +632,12 @@ public:
             if(realPairs >= 2){
                 int v = 0;
 
-                for(int i = 0; i < pairsOrd.size(); ++i){
+                for(int i = 0; i < ps; ++i){
                     int j = pairsOrd[i];
                     v += remains[j] * 4;
                 }
 
-                for(int i = 0; i < singlesOrd.size(); ++i){
+                for(int i = 0; i < ss; ++i){
                     int j = singlesOrd[i];
                     v += remains[j];
                 }
@@ -597,7 +675,7 @@ public:
     }
 
     bool checkYiShanTen(){ // Remove x to y and get z that can be win. Here x != z.
-
+        return false;
     }
 
     double calcValue(const char* fanName, int *cntsWin, int maxRound){
@@ -624,9 +702,6 @@ public:
 
 
     double evaluateSpecificLimitedFans(const string &fanName, int *limitTiles, int *origional ){
-        int totalTiles;
-
-        int tmp3[34];
 
         return 0.0;
     }
@@ -679,6 +754,16 @@ public:
         hidden[cid]--;
         hidden[cid + 1]--;
         hidden[cid + 2]--;
+    }
+
+    int checkAndExcludeSingleFlush(int *arr, const int &cid){
+        int val = 0;
+
+        if(arr[cid]){val += 4; arr[cid]--; }
+        if(arr[cid + 1]){val += 2; arr[cid + 1]--; }
+        if(arr[cid + 2]){val += 1; arr[cid + 2]--; }
+
+        return val;
     }
 
     int countOrgTiles(int *orgTiles, int cid1, int cid2, int cid3){
@@ -884,24 +969,25 @@ public:
 
         myDeck -> setTiles(remains);
         myDeck -> reset(1);
+
         const int maxRound = min(21, remainTiles);
 
-        const int totalNormalFans = 6;
+        const int totalNormalFans = 7;
 
         int cntsWin[totalNormalFans][maxRound + 1];
         bool isWin[totalNormalFans];
 
         int tmp[34], tmp2[34];
 
-        int maxPossibleTiles[totalNormalFans];
-
         bool hasSuit[5], hasPair[5];
 
+        vector<int> matchTiles[tripleFlushesFansNum];
 
-
+        for(int i = 0; i < tripleFlushesFansNum; ++i){
+            getMatchTiles()
+        }
 
         memset(cntsWin, 0, sizeof(cntsWin));
-
 
         while(round--){
             memcpy(tmp, hidden, sizeof(hidden));
@@ -910,6 +996,7 @@ public:
             memset(isWin, 0, sizeof(isWin));
 
             evaluateWuMenQiInit(hasPair, hasSuit);
+
 
             while(!(myDeck -> isEmpty()) && curRound < maxRound){
 
@@ -921,9 +1008,11 @@ public:
                 updateHE();
 
                 for(int i = 0; i < totalNormalFans - 1; ++i){
+
+                }
                     memcpy(tmp2, hidden,sizeof(tmp2));
                     maxPossibleTiles[i] = 0;
-                    if(!isWin[i] && winTripleFlushesFans(tmp, *tfPointers[i], maxPossibleTiles[i])){
+                    if(!isWin[i] && winTripleFlushesFans(tmp, *tfPointers[i]])){
                         isWin[i] = true; cntsWin[i][curRound]++;
                     }
 
@@ -1017,12 +1106,6 @@ public:
         values.push_back(evaluateQuanBuKao());
         values.push_back(evaluatePengPengHu());
 
-        //printf("PengPengHuValue: %.4lf\n", values[2]);
-
-        //values.push_back(evaluateWuMenQi());
-
-        //values.push_back(evaluateSanSeSanTongShun());
-
         evaluateNormal(values);
 
         sort(values.begin(), values.end());
@@ -1053,11 +1136,12 @@ public:
 
                 hidden[i]++;
 
-                /*
+                #ifdef LOCAL
                 printf("Play: %s\n", tileNameTenhou[i]);
                 printf("WeightedValue: %.4lf\n" , curValue);
                 printf("\n");
-                */
+                #endif
+
 
                 if(curValue > bestValue){
                     bestChoice = i;
@@ -1475,9 +1559,15 @@ void myGamePlay(Hands &myHand){
             if(outCID != -1){
                 lastTile = outCID;
 
-                //int curFan = calcFan(myHand, outCID, false);
 
+                #ifndef LOCAL
+                int curFan = calcFan(myHand, outCID, false);
+                #endif
+
+                #ifdef LOCAL
                 int curFan = 7;
+                #endif
+
                 if(curFan >= 8)sout << "HU";
                 else {
 
@@ -1501,11 +1591,7 @@ void myGamePlay(Hands &myHand){
                     if(outType < 3 && (outPlayerID - menFeng + 4) % 4 == 3){
                         //Can chow
 
-
-
                         // Chow x - 2, x - 1, x
-
-
 
                         if(outOrd >= 2 && tmpHand.hidden[x - 2] && tmpHand.hidden[x - 1]){
                             tmpHand.showCards.push_back({0, x - 2});
@@ -1614,9 +1700,7 @@ void myGamePlay(Hands &myHand){
                     }
                 }
             }
-
             else sout << "PASS";
-
         }
 
         else{
@@ -1637,7 +1721,7 @@ void myGamePlay(Hands &myHand){
 
 int main()
 {
-    //freopen("test.txt", "r", stdin);
+    freopen("test.txt", "r", stdin);
 
     init();
 

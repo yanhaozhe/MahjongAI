@@ -16,9 +16,9 @@ using namespace std;
 
 vector<string> request, response;
 
+const char* tripleFlushFansName[] = {"SanSeSanTongShun", "SanSeSanBuGao", "QingLong", "HuaLong", "YiSeSanBuGao", "YiSeSanTongShun"};
+const int tripleFlushFansSize[] = {7, 30, 3, 6, 36, 21};
 
-
-const char* tripleFlushFansName[] = {"SanSeSanTongShun", "SanSeSanBuGao", "QingLong", "HuaLong", "YiSeSanBuGao", "YiSeSanTongShun", "wuMenQi"};
 int tilesRange[5][34];
 const double baseValueQiDuiZi[8] = {0.01,0.02,0.04,0.2,1.25,25,500,10000.0};
 //0.75 0.2 0.04 0.01
@@ -50,10 +50,37 @@ const double erShanTenCoe[] = {0.0, 0.0, 0.0, 0.0004028062166426102, 0.002929687
 const double readyTileCoe[] = {0, 0.28, 0.5387, 0.7776, 0.9978, 1.2006, 1.3872, 1.5587, 1.7161, 1.8604, 1.9924, 2.1132, 2.2235, 2.324, 2.4155, 2.4987, 2.5742, 2.6427, 2.7046, 2.7605, 2.811, 2.8564, 2.8971, 2.9337}; // 23
 
 const double shanTenBase[] = {10000.0, 486.0, 40.0, 5.5, 2, 0.96, 0.0, 0.0, 0.0};
-const double tripleFlushesCoe[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.14, 0.2, 0.4, 1.0};
-
+const double tripleFlushesCoe[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0., 0.6, 1.0, 1.5};
 
 char tileNameTenhou[34][3];
+
+struct shanTenTiles{
+    int shanTen;
+    bool isImproveTiles[34];
+
+    shantenTiles(){
+        shanTen = 0;
+        memset(isImproveTiles, 0, sizeof(isImproveTiles));
+    }
+};
+
+const int ALL_FOUR_TILE = 34 * 34 * 34 * 34;
+const int MAX_LOAD_NUM = 38422;
+shanTenTiles stData[MAX_LOAD_NUM];
+int idST[ALL_FOUR_TILE];
+
+
+
+int countOnes(int x){
+    if(x <= 0)return 0;
+    int res = 0;
+    while(x > 0){
+        res += x % 2;
+        x /= 2;
+    }
+
+    return res;
+}
 
 
 class CardDeck{
@@ -255,15 +282,54 @@ struct limitFan{
     }
 };
 
+
+
 struct tripleFanElement{
     tripleFlushes* p;
-    int orgCounter;
+    int tripleFlushID;
+    int orgCounter, orgScore;
     int other[34];
+    int extraSuits;
 
     tripleFanElement(){
         p = NULL;
-        orgCounter = 0;
+        tripleFlushID = -1;
+        orgCounter = orgScore = extraSuits = 0;
         memset(other, 0, sizeof(other));
+    }
+
+    int getShanTen(){
+        int mainTiles = 9 - orgCounter;
+        int otherTiles = getShanTenOthers();
+
+        return mainTiles;
+    }
+
+    int getShanTenOthers(){
+        vector<int> otherTiles;
+        otherTiles.clear();
+
+        for(int i = 0; i < 34; ++i){
+            for(int j = 0; j < other[i]; ++j){
+                otherTiles.push_back(i);
+            }
+        }
+
+        int n = otherTiles.size();
+
+        if(n >= 5){
+            //CheckHu
+
+            bool hu = false;
+
+            for(int pairs = 0; !hu && pairs < tripleFlushesID ? 34 : 27; ++pairs){
+                if(otherTiles[i] >= 2){
+                    otherTiles[i] -= 2;
+                    for(int )
+                }
+            }
+
+        }
     }
 };
 
@@ -281,7 +347,7 @@ public:
     HandElements he;
     allTripleFlushesFan tf;
 
-    tripleFanElement tfe[6];
+    vector<tripleFanElement> tfe[6];
 
     vector<tripleFlushes> *tfPointers[tripleFlushesFansNum];
     vector<int> tfCounts[tripleFlushesFansNum];
@@ -310,6 +376,13 @@ public:
         tfPointers[3] = &tf.huaLong;
         tfPointers[4] = &tf.yiSeSanBuGao;
         tfPointers[5] = &tf.yiSeSanTongShun;
+
+        for(int i = 0; i < tripleFlushesFansNum; ++i){
+            for(int j = 0; j < tfPointers[i] -> size(); ++j){
+                tripleFanElement cur;
+                tfe[i].push_back(cur);
+            }
+        }
 
         for(int i = 0; i < 34; ++i){
             hidden[i] = 0;
@@ -350,7 +423,7 @@ public:
         }
     }
 
-    int getSingleMatchTiles(const tripleFlushes &fan, vector<int> &res, int *otherTiles){
+    std::pair<int, int> getSingleMatchTiles(const tripleFlushes &fan, int *otherTiles){
         bool ok1, ok2, ok3;
         ok1 = ok2 = ok3 = false;
 
@@ -369,34 +442,65 @@ public:
 
         if(!ok1){
             int temRes1 = checkAndExcludeSingleFlush(otherTiles, fan.cid1);
-            matches += (temRes << 6);
+            matches += (temRes1 << 6);
         }
 
         if(!ok2){
             int temRes2 = checkAndExcludeSingleFlush(otherTiles, fan.cid2);
-            matches += (temRes << 3);
+            matches += (temRes2 << 3);
         }
 
-        if(!ok1){
+        if(!ok3){
             int temRes3 = checkAndExcludeSingleFlush(otherTiles, fan.cid3);
-            matches += temRes;
+            matches += temRes3;
         }
 
-        return matches;
+        int extraSuit = showCards.size() - ok1 - ok2 - ok3;
+
+        return std::pair<extraSuit, pairmatches>;
     }
 
-    int getMatchTiles(vector<tripleFlushes> &fans, vector<int> &res){
+
+    /**@
+        fans[];  The normal
+        res[]: the result contains all kinds of triple flushes fans.
+
+        0. SanSeSanTongSHun, 7 types in total.
+        1. SanSeSanBuGao, 30 types in total.
+        2. QingLong, 3 types in total.
+        3. Hualong, 6 types in total.
+        4. YiSeSanBuGao, 36 types in total.
+        5. YiSeSanTongShun, 7 types in total.
+    **/
+
+    void getMatchTiles(vector<tripleFlushes> *fans[], vector<tripleFanElement> res[]){
         int v = 0;
-        int m = fans.size();
+        int m = tripleFlushesFansNum;
+
+        int tmp3[34];
+
+        tripleFanElement cur;
 
         for(int i = 0; i < m; ++i){
-            tripleFlushes &j = fans[i];
+            vector<tripleFlushes> &fan = *fans[i];
+
+            int n = fan.size();
+            for(int j = 0; j < n; ++j){
+                tripleFlushes &k = fan[j];
 
 
 
+                memcpy(cur.other, hidden, sizeof(hidden));
+
+                std::pair<int, int> val = getSingleMatchTiles(k, cur.other);
+
+                cur.extraSuits = showCards.size() - val.first;
+                cur.orgScore = val.second;
+                cur.orgCounter = countOnes(cur.orgScore);
+
+                res[i][j] = cur;
+            }
         }
-
-        return 0;
     }
 
     void updateHE(){
@@ -670,7 +774,6 @@ public:
             return 0.92;
         }
 
-
         return 0.0;
     }
 
@@ -773,67 +876,6 @@ public:
         return (orgTiles[cid1] > 0) + (orgTiles[cid2] > 0) + (orgTiles[cid3] > 0);
     }
 
-    int checkAndExcludeThreeFlushes(int *orgTiles, int cid1, int cid2, int cid3, int &maxPossibleTile){
-        if(cid1 > cid2)swap(cid1, cid2);
-        if(cid1 > cid3)swap(cid1, cid3);
-        if(cid2 > cid3)swap(cid2, cid3);
-
-        int tmp[34];
-
-        memcpy(tmp, hidden, sizeof(tmp));
-
-        bool ok1, ok2, ok3;
-        ok1 = ok2 = ok3 = false;
-
-        int res = 0;
-
-        int usedOrgTiles = 0;
-
-        for(auto it = showCards.begin(); it != showCards.end(); ++it){
-            //if()
-            if(it -> first == 0){
-                if(!ok1 && it -> second == cid1){ok1 = true; usedOrgTiles += 3; res++;}
-                if(!ok2 && it -> second == cid2){ok2 = true; usedOrgTiles += 3; res++;}
-                if(!ok3 && it -> second == cid3){ok3 = true; usedOrgTiles += 3; res++;}
-            }
-        }
-
-
-
-        if(!ok1){
-            if(hasHiddenChow(cid1)){
-                ok1 = true;
-                usedOrgTiles += countOrgTiles(orgTiles, cid1, cid1 + 1, cid1 + 2);
-                excludeSingleFlush(cid1);
-            }
-        }
-
-         if(!ok2){
-            if(hasHiddenChow(cid2)){
-                ok2 = true;
-                usedOrgTiles += countOrgTiles(orgTiles, cid2, cid2 + 1, cid2 + 2);
-                excludeSingleFlush(cid2);
-            }
-        }
-
-         if(!ok3){
-            if(hasHiddenChow(cid3)){
-                ok3 = true;
-                usedOrgTiles += countOrgTiles(orgTiles, cid3, cid3 + 1, cid3 + 2);
-                excludeSingleFlush(cid3);
-            }
-        }
-
-        maxPossibleTile = max(maxPossibleTile, usedOrgTiles);
-
-
-
-        if(ok1 && ok2 && ok3 && usedOrgTiles >= 6)
-            return res;
-        memcpy(hidden, tmp, sizeof(tmp));
-        return -1;
-    }
-
 
     bool checkOnePairWithOneSuits(int *orgTiles, int usedSuits){
         int extraSuit = showCards.size() - usedSuits;
@@ -858,27 +900,6 @@ public:
                 orgTiles[i] += sub;
 
                 hidden[i] += 2;
-            }
-        }
-
-        return false;
-    }
-
-    bool winTripleFlushesFans(int *orgTiles, vector<tripleFlushes> &arr, int &maxPossibleTile){
-
-        memcpy(tmp, hidden, sizeof(tmp));
-
-        int m = arr.size();
-
-        for(int i = 0; i < m; ++i){
-            memcpy(hidden, tmp, sizeof(tmp));
-
-            tripleFlushes* cur = &arr[i];
-
-            int val = checkAndExcludeThreeFlushes(orgTiles, cur -> cid1, cur -> cid2, cur -> cid3, maxPossibleTile);
-
-            if(val != -1){
-                if(checkOnePairWithOneSuits(orgTiles, val))return true;
             }
         }
 
@@ -945,6 +966,17 @@ public:
         return best;
     }
 
+    void debugOutputTFE(){
+        for(int i = 0; i < tripleFlushesFansNum; ++i){
+            printf("%s\n", tripleFlushFansName[i]);
+
+            for(unsigned int j = 0; j < tfe[i].size(); ++j){
+
+                printf("%d %d %d\n", j, tfe[i][j].orgCounter, tfe[i][j].orgScore);
+            }
+        }
+    }
+
     void evaluateWuMenQiInit(bool *hasPair, bool *hasSuit){
         for(int i = 0; i < 5; ++i){
             hasPair[i] = hasSuit[i] = false;
@@ -962,13 +994,19 @@ public:
         }
     }
 
+    /**
+    This function is used to evaluate all triple flush function.
+
+    /**/
+
     void evaluateNormal(vector<double> &values){
         int round = MAX_ROUND;
 
-        //outputTenhouFormat();
+        outputTenhouFormat();
 
         myDeck -> setTiles(remains);
         myDeck -> reset(1);
+
 
         const int maxRound = min(21, remainTiles);
 
@@ -981,13 +1019,19 @@ public:
 
         bool hasSuit[5], hasPair[5];
 
-        vector<int> matchTiles[tripleFlushesFansNum];
+        getMatchTiles(tfPointers, tfe);
 
-        for(int i = 0; i < tripleFlushesFansNum; ++i){
-            getMatchTiles()
-        }
 
         memset(cntsWin, 0, sizeof(cntsWin));
+
+        // Evaluate all 6 triple flushes
+        for(int i = 0; i < tripleFlushesFansNum; ++i){
+            for(int j = 0; j < tripleFlushFansSize[i]; ++j){
+
+            }
+        }
+
+
 
         while(round--){
             memcpy(tmp, hidden, sizeof(hidden));
@@ -1007,7 +1051,7 @@ public:
                 hidden[cid]++;
                 updateHE();
 
-                for(int i = 0; i < totalNormalFans - 1; ++i){
+                for(int i = 0; i < tripleFlushesFansNum; ++i){
 
                 }
                     memcpy(tmp2, hidden,sizeof(tmp2));
@@ -1019,16 +1063,6 @@ public:
                     memcpy(hidden, tmp2, sizeof(tmp2));
                 }
 
-               /* if(!isWin[totalNormalFans - 1]){
-                    int wuMenQiSuits = evaluateWuMenQiSuits(hasPair, hasSuit, cid);
-
-                    if(wuMenQiSuits == 5){
-                        isWin[4] = true; cntsWin[4][curRound]++;
-                    }
-                }*/
-
-
-
                 curRound++;
             }
 
@@ -1037,8 +1071,9 @@ public:
             memcpy(hidden, tmp, sizeof(tmp));
         }
 
-        for(int i = 0; i < totalNormalFans; ++i){
+        for(int i = 0; i < tripleFlushesFansNum; ++i){
             double curValue = calcValue(tripleFlushFansName[i], cntsWin[i], maxRound);
+
             int coe = tripleFlushesCoe[maxPossibleTiles[i]];
             values.push_back(coe * curValue);
 
@@ -1051,7 +1086,7 @@ public:
             #endif
         }
 
-        memcpy(hidden, tmp, sizeof(tmp));
+        memcpy(hidden, tmp, sizeof(tmp));*/
 
 
        // return calcValue(cntsWin, maxRound);*/
@@ -1234,6 +1269,29 @@ public:
     }
 };
 
+void loadSTdata(const char *filename){
+    FILE *fp = fopen(filename, "r");
+
+    if(fp != NULL){
+        int
+        char s[36];
+
+        for(int i = 0; i < MAX_LOAD_NUM){
+            fscanf(fp, "%d", &stData[i].id);
+            fscanf(fp, "%d", &stData[i].shanten)
+            fscanf(fp, "%s", s);
+
+            for(int j = 0; j < 34; ++j){
+                stData[i].isImproveTile[j] = s[i] == '1';
+            }
+
+            stData[i].id = i;
+        }
+    }
+
+    fclose(fp);
+}
+
 void init(){
     memset(tilesRange, 0, sizeof(tilesRange));
     memset(tileNameTenhou, 0, sizeof(tileNameTenhou));
@@ -1256,6 +1314,11 @@ void init(){
 
         tileNameID[tileName[i]] = i;
     }
+
+    memset(idST, -1, sizeof(idST));
+
+    loadSTData("data/shanten4.dat");
+
 }
 
 int calcFan(Hands &myHand, int winCid, bool isSelfDraw){
@@ -1724,6 +1787,8 @@ int main()
     freopen("test.txt", "r", stdin);
 
     init();
+
+
 
     Hands myHand;
     CardDeck myDeck;

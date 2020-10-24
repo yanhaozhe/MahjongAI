@@ -43,14 +43,14 @@ const double pairsCoe[] = {0.1, 0.4, 1.0};
 const double singleCoe[] = {0.05, 0.25, 0.5, 1.0};
 const double extraCoe[] = {0.0, 0.2, 0.3, 0.35, 0.4, 0.42, 0.445, 0.455, 0.460, 0.464};
 const double tilenumCoe[] = {0.4, 0.75, 1, 1.2, 1.33, 1.44, 1.55, 1.66, 1.77};
-const double yiShanTenCoe[] = {0.0, 0.0, 0.022675736961451247, 0.08264462809917356, 0.17013232514177692, 0.2777777777777778, 0.4, 0.5325443786982249, 0.6721536351165981, 0.8163265306122449, 0.9631391200951248, 1.1111111111111112, 1.259105098855359, 1.40625, 1.5518824609733701, 1.6955017301038062, 1.836734693877551, 1.9753086419753085, 2.111029948867787, 2.2437673130193905, 2.373438527284681, 2.5, 2.6234384295062463, 2.743764172335601, 2.8610059491617092, 2.975206611570248, 3.0864197530864197, 3.1947069943289224, 3.3001358080579446, 3.4027777777777777, 3.502707205331112, 3.6, 3.694732795078816, 3.78698224852071, 3.876824492702029, 3.9643347050754456, 4.049586776859504}; // 38
-
+const double readyTileCoe[] = {0, 0.28, 0.5387, 0.7776, 0.9978, 1.2006, 1.3872, 1.5587, 1.7161, 1.8604, 1.9924, 2.1132, 2.2235, 2.324, 2.4155, 2.4987, 2.5742, 2.6427, 2.7046, 2.7605, 2.811, 2.8564, 2.8971, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337, 2.9337}; // 23
+const double yiShanTenCoe[] = {0.0, 0.0, 0.0227, 0.0826, 0.1701, 0.2778, 0.4, 0.5325, 0.6722, 0.8163, 0.9631, 1.1111, 1.2591, 1.4062, 1.5519, 1.6955, 1.8367, 1.9753, 2.111, 2.2438, 2.3734, 2.5, 2.6234, 2.7438, 2.861, 2.9752, 3.0864, 3.1947, 3.3001, 3.4028, 3.5027, 3.6, 3.6947, 3.787, 3.8768, 3.9643, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496,4.0496, 4.0496, 4.0496,4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496,4.0496, 4.0496, 4.0496,4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496,4.0496, 4.0496, 4.0496,4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496, 4.0496,4.0496, 4.0496, 4.0496}; // 38
 const double erShanTenCoe[] = {0.0, 0.0, 0.0, 0.0004028062166426102, 0.0029296875, 0.009015777610818933, 0.019539995929167515, 0.03498542274052478, 0.05555555555555555, 0.08125876058673721, 0.11196967487972008, 0.14747382794720074, 0.1875, 0.23174359048765977, 0.27988338192419826, 0.33159344460236206, 0.38655146506386173, 0.4444444444444444, 0.504972466507767, 0.5678510541980101, 0.6328125, 0.6996064564934679, 0.768, 0.8377773254630572, 0.9087391898042786, 0.9807021903987856, 1.0534979423868314, 1.1269722013523666, 1.2009839650145773, 1.2754045779268115, 1.350116855959654, 1.4250142419624208, 1.5, 1.574986452610571, 1.6498942633681313, 1.724651765468092, 1.7991943359375, 1.8734638142922166, 1.9474079639368895, 2.0209799742654515, 2.09413800122125, 2.166844743979617, 2.239067055393586, 2.3107755838742032, 2.3819444444444446, 2.4525509167979807, 2.522575168301976, 2.592, 2.660810613792098, 2.7289943990905368, 2.7965407373691398, 2.8634408231397517}; //52
+const double sanShanTenCoe[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0063, 0.0828, 0.1602, 0.2377, 0.3146, 0.3904, 0.4647, 0.5371, 0.6074, 0.6754, 0.7409, 0.8039, 0.8642, 0.9219, 0.9768, 1.0291, 1.0788, 1.1259, 1.1704, 1.2124, 1.252, 1.2892, 1.3241, 1.3568, 1.3874, 1.4159, 1.4425, 1.4671, 1.4899, 1.511, 1.5303, 1.5481, 1.5644, 1.5792, 1.5926, 1.6046, 1.6154, 1.625, 1.6334, 1.6408, 1.6471};
+const double shanTenBase[] = {486.0, 40.0, 5.5, 2, 0.75, 0.0, 0.0, 0.0};
+const double tripleFlushesCoe[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4, 0.6, 1.2, 4.5};
 
-const double readyTileCoe[] = {0, 0.28, 0.5387, 0.7776, 0.9978, 1.2006, 1.3872, 1.5587, 1.7161, 1.8604, 1.9924, 2.1132, 2.2235, 2.324, 2.4155, 2.4987, 2.5742, 2.6427, 2.7046, 2.7605, 2.811, 2.8564, 2.8971, 2.9337}; // 23
-
-const double shanTenBase[] = {10000.0, 486.0, 40.0, 5.5, 2, 0.96, 0.0, 0.0, 0.0};
-const double tripleFlushesCoe[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0., 0.6, 1.0, 1.5};
+int worstShanTenAccepted[] = {1, 6, 12, 21};
 
 char tileNameTenhou[34][3];
 
@@ -69,8 +69,6 @@ const int MAX_LOAD_NUM = 38422;
 shanTenTiles stData[MAX_LOAD_NUM];
 int idST[ALL_FOUR_TILE];
 
-
-
 int countOnes(int x){
     if(x <= 0)return 0;
     int res = 0;
@@ -78,7 +76,6 @@ int countOnes(int x){
         res += x % 2;
         x /= 2;
     }
-
     return res;
 }
 
@@ -282,27 +279,60 @@ struct limitFan{
     }
 };
 
-
+int getID(int *a){
+    return a[0] * 34 * 34 * 34 + a[1] * 34 * 34 + a[2] * 34 + a[3];
+}
 
 struct tripleFanElement{
     tripleFlushes* p;
+
     int tripleFlushID;
+
     int orgCounter, orgScore;
+    int lackMain[34];
     int other[34];
     int extraSuits;
+    bool improveTiles[34];
+    int totalImproveTiles;
 
     tripleFanElement(){
         p = NULL;
         tripleFlushID = -1;
         orgCounter = orgScore = extraSuits = 0;
         memset(other, 0, sizeof(other));
+        memset(improveTiles, 0, sizeof(improveTiles));
+        memset(lackMain, 0, sizeof(lackMain));
+
+        totalImproveTiles = 0;
     }
 
     int getShanTen(){
         int mainTiles = 9 - orgCounter;
         int otherTiles = getShanTenOthers();
 
-        return mainTiles;
+        return mainTiles + otherTiles;
+    }
+
+    int getScore(){
+        int shanTenNum = getShanTen(), nextTile = totalImproveTiles;
+        if(shanTenNum < 4 && nextTile < worstShanTenAccepted[shanTenNum]){
+            shanTenNum++;
+            nextTile += 24;
+        }
+
+        if(nextTile > 50)nextTile = 50;
+
+
+        if(shanTenNum == 5)return 0.375 * tripleFlushesCoe[orgCounter];
+        if(shanTenNum == 4)return 0.75 * tripleFlushesCoe[orgCounter];
+
+        double coe3 = 1.0;
+        if(shanTenNum == 3)coe3 = sanShanTenCoe[nextTile];
+        if(shanTenNum == 2)coe3 = erShanTenCoe[nextTile];
+        if(shanTenNum == 1)coe3 = yiShanTenCoe[nextTile];
+        if(shanTenNum == 0)coe3 = readyTileCoe[nextTile];
+
+        return shanTenBase[shanTenNum] * tripleFlushesCoe[orgCounter] * coe3;
     }
 
     int getShanTenOthers(){
@@ -317,18 +347,64 @@ struct tripleFanElement{
 
         int n = otherTiles.size();
 
+        int res = 3;
+
         if(n >= 5){
             //CheckHu
 
             bool hu = false;
 
-            for(int pairs = 0; !hu && pairs < tripleFlushesID ? 34 : 27; ++pairs){
-                if(otherTiles[i] >= 2){
-                    otherTiles[i] -= 2;
-                    for(int )
-                }
-            }
+            for(int pairs = 0; !hu && pairs < tripleFlushID ? 34 : 27; ++pairs){
+                if(other[pairs] >= 2){
+                    other[pairs] -= 2;
 
+                    if(extraSuits)hu = true;
+
+                    else{
+
+                        for(int start = 0; start < 34; ++start){
+                            if(other[start] >= 3){hu = true; break;}
+                            if(tileType[start] < 3 && tileOrd[start] < 7 && other[start] && other[start + 1] && other[start + 2]) {hu = true; break;}
+                        }
+
+                    other[pairs] += 2;
+                    }
+                }
+
+                if(hu)return -1;
+            }
+        }
+
+        else{ // Find it in the table
+
+            int best = 2;
+            bool bestImproveTile[34];
+
+            memset(bestImproveTile, 0, sizeof(bestImproveTile));
+
+            int a[4];
+            for(a[0] = 0; a[0] < n; ++a[0])
+                for(a[1] = a[0] + 1; a[1] < n; ++a[1])
+                    for(a[2] = a[1] + 1; a[2] < n; ++a[2])
+                        for(a[3] = a[2] + 1; a[3] < n; ++a[3]){
+                            int oid = getID(a);
+                            int idx = idST[oid];
+                            int cur = idx == -1 ? 2 : stData[idx].shanTen;
+
+                            if(cur < best) {
+                                best = cur;
+                                memcpy(bestImproveTile, stData[idx].isImproveTiles, sizeof(bestImproveTile));
+                            }
+
+                            else if(cur == best){
+
+                                for(int i = 0; i < 34; ++i){
+                                    bestImproveTile[i] |= stData[idx].isImproveTiles[i];
+                                }
+                            }
+                        }
+            strcpy(improveTiles, bestImproveTile, sizeof(bestImproveTile));
+            return best;
         }
     }
 };
@@ -423,9 +499,11 @@ public:
         }
     }
 
-    std::pair<int, int> getSingleMatchTiles(const tripleFlushes &fan, int *otherTiles){
+    std::pair<int, int> getSingleMatchTiles(tripleFanElement &cur, const tripleFlushes &fan){
         bool ok1, ok2, ok3;
         ok1 = ok2 = ok3 = false;
+
+        int *otherTiles = cur.other;
 
         memcpy(otherTiles, hidden, sizeof(hidden));
 
@@ -456,6 +534,7 @@ public:
         }
 
         int extraSuit = showCards.size() - ok1 - ok2 - ok3;
+
 
         return std::pair<extraSuit, pairmatches>;
     }
@@ -492,10 +571,15 @@ public:
 
                 memcpy(cur.other, hidden, sizeof(hidden));
 
-                std::pair<int, int> val = getSingleMatchTiles(k, cur.other);
+                std::pair<int, int> val = getSingleMatchTiles(cur, k);
+
+
 
                 cur.extraSuits = showCards.size() - val.first;
                 cur.orgScore = val.second;
+
+                cur.orgScore
+
                 cur.orgCounter = countOnes(cur.orgScore);
 
                 res[i][j] = cur;
@@ -997,7 +1081,7 @@ public:
     /**
     This function is used to evaluate all triple flush function.
 
-    /**/
+    */
 
     void evaluateNormal(vector<double> &values){
         int round = MAX_ROUND;
@@ -1285,7 +1369,8 @@ void loadSTdata(const char *filename){
                 stData[i].isImproveTile[j] = s[i] == '1';
             }
 
-            stData[i].id = i;
+
+            idST[stData[i].id] = i;
         }
     }
 

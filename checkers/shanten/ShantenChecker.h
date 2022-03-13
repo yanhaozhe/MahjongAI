@@ -1,3 +1,4 @@
+#pragma once
 #include<bits/stdc++.h>
 #include "comm/comm.h"
 using namespace std;
@@ -8,10 +9,13 @@ class ShantenChecker {
 public:
     ShantenChecker(const int* tiles);
 
-    void CheckSevenPairs();
-    void CheckSpecialWin(int &thirteen_orpans, int &seven_pairs);
+    bool CheckSevenPairsWin();
+    void CheckSpecialWin(bool &thirteen_orpans, bool &seven_pairs);
     int CheckShanTenNum();
     bool CheckReady(vector<int>& tiles);
+    bool Check1Shanten(vector<int>& tiles);
+    bool Check2Shanten();
+    void ShowHands();
 
 protected:
 

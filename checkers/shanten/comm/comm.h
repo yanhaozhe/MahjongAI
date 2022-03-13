@@ -1,3 +1,4 @@
+#pragma once
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -27,12 +28,12 @@ int CheckWin(const int* tiles) {
         total_tiles += tiles[i];
         pairs += tiles[i] / 2;
     }
-
+ 
     if(total_tiles % 3 != 2) {
         return false;
     }
 
-    if(7 == total_tiles) { // 七对特盼
+    if(7 == total_tiles) { // 七对特例
         return true;
     }
 
@@ -43,12 +44,11 @@ int CheckWin(const int* tiles) {
         int groups = 0;
         if(tmp[i] >= 2) {
             tmp[i] -= 2;
-
             bool is_continue = true;
             do {
                 for(int id = ALL_NUMBER_TYPES; id < ALL_TYPES; ++id) { //检查字牌，除去将之后只能为0或3张
-                    if(tmp[i] % 3 == 0) {
-                        groups += tmp[i] / 3;
+                    if(tmp[id] % 3 == 0) {
+                        groups += tmp[id] / 3;
                     }
 
                     else{
@@ -60,7 +60,7 @@ int CheckWin(const int* tiles) {
 
                 for(int id = 0; id < ALL_NUMBER_TYPES; ++id) {
                     if(tmp[id]) {
-                        if(tmp[id] > 3) {
+                        if(tmp[id] >= 3) {
                             tmp[id] -= 3;
                             groups++;
                         }
@@ -93,8 +93,10 @@ int CheckWin(const int* tiles) {
     return ok;
 }
 
+/*
 void ConvertTilesString2Array(const string& tiles_string, int* tiles_array) { // 将类似1112345678999m转化成34维数组[3,1,1,1,1,1,1,1,3,0,0,...,0]
     if(tiles_array == nullptr) {
         tiles_array = (int *)malloc(sizeof(int) * ALL_TYPES);
     }
 }
+*/

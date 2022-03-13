@@ -90,7 +90,6 @@ int CheckWin(const int* tiles) {
             tmp[i] += 2;
         }
     }
-
     return ok;
 }
 

@@ -6,12 +6,12 @@ using namespace std;
 class ShantenChecker {
 
 public:
-ShantenChecker();
-~ShantenChecker();
+    ShantenChecker(const int* tiles);
 
-void CheckSevenPairs();
-void CheckSpecialWin(int &thirteen_orpans, int &seven_pairs);
-int CheckShanTenNum();
+    void CheckSevenPairs();
+    void CheckSpecialWin(int &thirteen_orpans, int &seven_pairs);
+    int CheckShanTenNum();
+    bool CheckReady(vector<int>& tiles);
 
 protected:
 
@@ -20,4 +20,4 @@ private:
     int show_hands_[ALL_TYPES];
     int hidden_hands_[ALL_TYPES];
     bool has_show_tiles_;
-}
+};
